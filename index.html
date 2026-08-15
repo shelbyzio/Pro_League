@@ -67,10 +67,10 @@
             { name: "Porto", logo: "https://crests.football-data.org/503.png", telegram: "ChanAung1178" },
             { name: "Benfica", logo: "https://crests.football-data.org/1903.png", telegram: "Badrul11" },
             { name: "Rangers", logo: "https://crests.football-data.org/674.png", telegram: "agust_HML" },
-            { name: "Ajax", logo: "https://upload.wikimedia.org/wikipedia/commons/0/0d/Logo_AFC_Ajax_%281928-1991%2C_2025-%29.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original", telegram: "minkhant090" },
+            { name: "Ajax", logo: "https://crests.football-data.org/675.png", telegram: "minkhant090" },
 
 
-            { name: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Feyenoord_logo_since_2024.svg/1280px-Feyenoord_logo_since_2024.svg.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail", telegram: "SayarJuJu" },
+            { name: "Feyenoord", logo: "https://crests.football-data.org/678.png", telegram: "SayarJuJu" },
             { name: "Nottingham", logo: "https://crests.football-data.org/351.png", telegram: "Hemalkhulal19" },
             { name: "Newcastle", logo: "https://crests.football-data.org/67.png", telegram: "its_ed2y" },
             { name: "Sevilla", logo: "https://crests.football-data.org/559.png", telegram: "jelium11" },
@@ -287,7 +287,7 @@
             `;
         };
 
-        const renderSetup = (container) => {
+        window.renderSetup = (container) => {
             if (window.state.teams.length < 48) {
                 for (let i = window.state.teams.length; i < 48; i++) {
                     window.state.teams.push({ id: i, name: initialTeams[i]?.name || "", logo: initialTeams[i]?.logo || "", telegram: initialTeams[i]?.telegram || "" });
@@ -331,7 +331,7 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <button onclick="generateFixtures()" class="py-4 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20">Generate 4 Rounds</button>
+                        <button onclick="generateFixtures()" class="py-4 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20">Generate 8 Rounds</button>
                         <button onclick="startLeague()" class="py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-600/20">Start League</button>
                     </div>
                     <button onclick="resetTournament()" class="w-full py-4 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-2xl font-black text-[9px] uppercase tracking-widest border border-red-500/10 transition-all">Reset All Tournament Data</button>
@@ -522,9 +522,10 @@
 
             window.showModal(
                 "ပွဲစဉ်ဇယား ထုတ်ရန် အတည်ပြုချက်",
-                `လက်ရှိ စာရင်းသွင်းထားသူ Manager ${activeTeams.length} ဦးအတွက် အချင်းချင်း ပွဲစဉ်လုံးဝမထပ်စေဘဲ Round 4 အထိ Fixtures များ စနစ်တကျ ဖန်တီးမလား?`,
+                `လက်ရှိ စာရင်းသွင်းထားသူ Manager ${activeTeams.length} ဦးအတွက် အချင်းချင်း ပွဲစဉ်လုံးဝမထပ်စေဘဲ Round 8 အထိ Fixtures များ စနစ်တကျ ဖန်တီးမလား?`,
                 () => {
-                    window.state.rounds = Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] }));
+                    // ရှိပြီးသား rounds များကို 8 rounds အထိ ဖြစ်စေရန် ပြင်ဆင်ခြင်း
+                    window.state.rounds = Array.from({length: 8}, (_, i) => ({ round: i + 1, matches: [] }));
 
                     let scheduleTeams = [...activeTeams].sort(() => Math.random() - 0.5);
                     let N = scheduleTeams.length;
@@ -536,7 +537,7 @@
                     }
 
                     const maxPossibleRounds = N - 1;
-                    const roundsToCreate = Math.min(4, maxPossibleRounds);
+                    const roundsToCreate = Math.min(8, maxPossibleRounds);
 
                     for (let r = 0; r < roundsToCreate; r++) {
                         const roundMatches = [];
@@ -678,7 +679,7 @@
 
         window.updateKOMatch = (stage, idx, field, val) => { window.state.knockout[stage][idx][field] = field.startsWith('s') ? (val === "" ? null : parseInt(val)) : val; saveToCloud(); refreshUI(); };
         window.changeTab = t => { window.state.activeTab = t; refreshUI(); };
-        window.moveRound = d => { const n = window.state.currentRound + d; if(n > 0 && n <= 4) { window.state.currentRound = n; refreshUI(); } };
+        window.moveRound = d => { const n = window.state.currentRound + d; if(n > 0 && n <= 8) { window.state.currentRound = n; refreshUI(); } };
         
         window.adminLogin = () => {
             const pass = prompt("Password?");
