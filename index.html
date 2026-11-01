@@ -1,845 +1,1327 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRO LEAGUE Season 7</title>
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=b7a2208a-880b-42dc-af38-20ed9dabdd73
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Master League | Complete World Cup Tournament System</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap');
 
-        // Firebase Configuration (လက်ရှိ အသုံးပြုနေသော ပတ်ဝန်းကျင်ဒေတာ)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDxbrWG3bQTqFiKNZ_8rLvMPeOOj3PTWJI",
-            authDomain: "the-one-community-a3a50.firebaseapp.com",
-            projectId: "the-one-community-a3a50",
-            storageBucket: "the-one-community-a3a50.firebasestorage.app",
-            messagingSenderId: "935304206770",
-            appId: "1:935304206770:web:66386d8e818f4625b1acab",
-            measurementId: "G-MN34Y0XN8J"
-        };
+        :root {
+            --world-gold: #ddec0f;
+            --world-gold-hover: #c4d40b;
+            --world-navy: #0a192f;
+            --dark-bg: #050b14;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --border-glow: rgba(221, 236, 15, 0.18);
+        }
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const appId = 'the-one-community-v1';
+        * {
+            box-sizing: border-box;
+        }
 
-        // လူကြီးမင်း ပေးထားသော ထိပ်သီးကလပ် ၄၈ သင်း၊ တရားဝင် Logo URLs နှင့် Default Telegram usernames စာရင်း
-        const fixedTeams = [
-            { name: "Liverpool", logo: "https://crests.football-data.org/64.png", telegram: "staicd9" },
-            { name: "Arsenal", logo: "https://crests.football-data.org/57.png", telegram: "aamk79" },
-            { name: "Man City", logo: "https://crests.football-data.org/65.png", telegram: "MH202031" },
-            { name: "Aston Villa", logo: "https://crests.football-data.org/58.png", telegram: "ptkyaw87" },
-            { name: "Barcelona", logo: "https://crests.football-data.org/81.png", telegram: "Khine_Lin_Htay" },
-            { name: "Real Madrid", logo: "https://crests.football-data.org/86.png", telegram: "Sanminoo" },
-            { name: "Villarreal", logo: "https://crests.football-data.org/94.png", telegram: "MayJu2004" },
-            { name: "Atletico Madrid", logo: "https://crests.football-data.org/78.png", telegram: "yminchit69" },
-            { name: "Real Betis", logo: "https://crests.football-data.org/90.png", telegram: "Heropool" },
-            { name: "Napoli", logo: "https://crests.football-data.org/113.png", telegram: "Garniya" },
-            { name: "Inter Milan", logo: "https://crests.football-data.org/108.png", telegram: "zeusace0" },
-            { name: "Roma", logo: "https://crests.football-data.org/100.png", telegram: "kenzjust" },
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--dark-bg); 
+            color: #ffffff; 
+            -webkit-tap-highlight-color: transparent; 
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
 
-            { name: "Como", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Calcio_Como_-_logo_%28Italy%2C_2019-%29.svg/250px-Calcio_Como_-_logo_%28Italy%2C_2019-%29.svg.png", telegram: "Bgo_thar_lay" },
-            { name: "Bayern Munich", logo: "https://crests.football-data.org/5.png", telegram: "kharkhar1225" },
-            { name: "Dortmund", logo: "https://crests.football-data.org/4.png", telegram: "" },
-            { name: "Man United", logo: "https://crests.football-data.org/66.png", telegram: "Naindjjd" },
-            { name: "RB Leipzig", logo: "https://crests.football-data.org/721.png", telegram: "KeeRan_kawor" },
-            { name: "Stuttgart", logo: "https://crests.football-data.org/10.png", telegram: "htetnaungphyo10" },
-            { name: "PSG", logo: "https://crests.football-data.org/524.png", telegram: "arkar8099" },
-            { name: "Lille", logo: "https://crests.football-data.org/521.png", telegram: "Kavin_9356" },
-            { name: "Nice", logo: "https://crests.football-data.org/543.png", telegram: "Settnehenrichs" },
-            { name: "Juventus", logo: "https://crests.football-data.org/109.png", telegram: "Albert17207" },
-            { name: "Ac Milan", logo: "https://crests.football-data.org/98.png", telegram: "Novem899" },
-            { name: "Lazio", logo: "https://crests.football-data.org/110.png", telegram: "kyawhtet112001" },
+        .heading-font { font-family: 'Outfit', sans-serif; }
 
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-            { name: "Fiorentina", logo: "https://crests.football-data.org/99.png", telegram: "Toe1l" },
-            { name: "Marseille", logo: "https://crests.football-data.org/516.png", telegram: "Jonbaw9" },
-            { name: "Lyon", logo: "https://crests.football-data.org/523.png", telegram: "khant200455" },
-            { name: "Fenerbache", logo: "https://crests.football-data.org/610.png", telegram: "iz_szlai" },
-            { name: "Galatasary", logo: "https://crests.football-data.org/612.png", telegram: "DumbzyLwinSmitch35" },
-            { name: "Young Boys", logo: "https://crests.football-data.org/1871.png", telegram: "kadio_rx" },
-            { name: "Qarabag", logo: "https://upload.wikimedia.org/wikipedia/en/f/fe/Qaraba%C4%9F_FK_logo.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original", telegram: "SayarKhar" },
-            { name: "Sporting", logo: "https://crests.football-data.org/498.png", telegram: "Turkey772" },
-            { name: "Porto", logo: "https://crests.football-data.org/503.png", telegram: "ChanAung1178" },
-            { name: "Benfica", logo: "https://crests.football-data.org/1903.png", telegram: "Badrul11" },
-            { name: "Rangers", logo: "https://crests.football-data.org/674.png", telegram: "agust_HML" },
-            { name: "Ajax", logo: "https://crests.football-data.org/675.png", telegram: "minkhant090" },
+        .glass-panel { 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glow); 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
 
+        .glass-panel:hover {
+            border-color: rgba(221, 236, 15, 0.35);
+            box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+        }
 
-            { name: "Feyenoord", logo: "https://crests.football-data.org/678.png", telegram: "SayarJuJu" },
-            { name: "Nottingham", logo: "https://crests.football-data.org/351.png", telegram: "Hemalkhulal19" },
-            { name: "Newcastle", logo: "https://crests.football-data.org/67.png", telegram: "its_ed2y" },
-            { name: "Sevilla", logo: "https://crests.football-data.org/559.png", telegram: "jelium11" },
-            { name: "Leverkusen", logo: "https://crests.football-data.org/3.png", telegram: "mikeyjn" },
-            { name: "Freiburg", logo: "https://crests.football-data.org/17.png", telegram: "khant2010m" },
-            { name: "Pafos", logo: "https://pafosfc.com.cy/wp-content/uploads/2024/07/Pafos-FC-Logo.png", telegram: "LuLu1662017" },
-            { name: "Copenhagen", logo: "https://crests.football-data.org/1876.png", telegram: "bobominhein" },
-            { name: "midtjylland", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/dd/FC_Midtjylland_logo.svg/1280px-FC_Midtjylland_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail", telegram: "SuperHakky" },
-            { name: "Bodo Glimt", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8d/FK_Bodo_Glimt_logo.svg/1280px-FK_Bodo_Glimt_logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail", telegram: "ThuRein_2_K" },
-            { name: "PSV", logo: "https://crests.football-data.org/674.png", telegram: "Sobwks" },
-            { name: "Celtic", logo: "https://upload.wikimedia.org/wikipedia/en/7/71/Celtic_FC_crest.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original", telegram: "Kent1uV" }
+        .score-box { 
+            width: 38px; 
+            height: 38px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 10px; 
+            font-weight: 900; 
+            font-size: 15px; 
+            border: 1px solid #1e293b; 
+            background: #020617; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 640px) {
+            .score-box {
+                width: 44px;
+                height: 44px;
+                font-size: 16px;
+                border-radius: 12px;
+            }
+        }
+
+        .score-input {
+            width: 48px;
+            height: 42px;
+            background: #020617;
+            border: 2px solid #334155;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--world-gold);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        @media (min-width: 640px) {
+            .score-input {
+                width: 52px;
+                height: 44px;
+                font-size: 18px;
+                border-radius: 12px;
+            }
+        }
+        .score-input:focus {
+            border-color: var(--world-gold);
+            box-shadow: 0 0 10px rgba(221, 236, 15, 0.3);
+        }
+
+        .group-header { 
+            background: linear-gradient(90deg, rgba(221,236,15,0.12) 0%, rgba(221,236,15,0) 100%); 
+            border-left: 4px solid var(--world-gold); 
+        }
+
+        .team-link { 
+            color: #ffffff !important; 
+            text-decoration: none; 
+            transition: color 0.2s ease, opacity 0.2s ease; 
+        }
+        .team-link:hover { 
+            color: var(--world-gold) !important; 
+            opacity: 0.9;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="no-scrollbar pb-24">
+
+<header class="sticky top-0 z-40 bg-[var(--world-navy)]/95 backdrop-blur-xl border-b border-[var(--world-gold)]/20 px-3 sm:px-8 py-3 sm:py-4">
+    <div class="flex items-center justify-between max-w-7xl mx-auto">
+        <div class="flex items-center space-x-2.5 sm:space-x-3">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-[var(--world-gold)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--world-gold)]/20 text-black shrink-0">
+                <i class="fas fa-trophy text-base sm:text-lg"></i>
+            </div>
+            <div>
+                <h1 class="heading-font text-sm sm:text-xl leading-none italic font-black">
+                    Master League <span class="text-[var(--world-gold)]">| Season - 8</span>
+                </h1>
+                <p class="text-[9px] sm:text-xs text-zinc-400 mt-1 flex items-center gap-1.5 sm:gap-2">
+                    <span id="cloud-status-badge" class="px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                        <i class="fas fa-circle-notch animate-spin text-[7px]"></i> Connecting...
+                    </span>
+                    <span class="hidden md:inline text-zinc-500">• 32 Teams Edition</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center bg-black/60 p-1 rounded-xl sm:rounded-2xl border border-zinc-800">
+            <button onclick="switchTab('public')" id="nav-public" class="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-[var(--world-gold)] text-black shadow-md flex items-center gap-1.5 sm:gap-2">
+                <i class="fas fa-globe"></i>
+                <span class="inline">Hub</span>
+            </button>
+            <button onclick="switchTab('admin')" id="nav-admin" class="px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all text-zinc-400 hover:text-white flex items-center gap-1.5 sm:gap-2">
+                <i class="fas fa-user-shield text-[var(--world-gold)]"></i>
+                <span class="inline">Admin</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="p-3 sm:p-6 max-w-7xl mx-auto">
+
+    <!-- PUBLIC VIEW SECTION -->
+    <section id="public-view-section" class="space-y-4 sm:space-y-8">
+        
+        <!-- Stage Sub-Navigation Bar -->
+        <div class="glass-panel p-2 sm:p-3 rounded-2xl flex space-x-2 overflow-x-auto no-scrollbar">
+            <button onclick="setPublicStage('group')" id="p-stage-group" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-[var(--world-gold)] text-black shrink-0">
+                <i class="fas fa-users mr-1"></i> Group Stage
+            </button>
+            <button onclick="setPublicStage('standings')" id="p-stage-standings" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-list-ol mr-1"></i> Standings
+            </button>
+            <button onclick="setPublicStage('r16')" id="p-stage-r16" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-star mr-1"></i> Round of 16
+            </button>
+            <button onclick="setPublicStage('qf')" id="p-stage-qf" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-fire mr-1"></i> Quarter-Finals
+            </button>
+            <button onclick="setPublicStage('sf')" id="p-stage-sf" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-bolt mr-1"></i> Semi-Finals
+            </button>
+            <button onclick="setPublicStage('third')" id="p-stage-third" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-award mr-1"></i> 3rd Place
+            </button>
+            <button onclick="setPublicStage('final')" id="p-stage-final" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-crown mr-1 text-yellow-300"></i> Final
+            </button>
+            <button onclick="setPublicStage('bracket')" id="p-stage-bracket" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-sitemap mr-1"></i> Bracket
+            </button>
+            <button onclick="setPublicStage('status')" id="p-stage-status" class="p-stage-btn px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
+                <i class="fas fa-chart-pie mr-1"></i> Status
+            </button>
+        </div>
+
+        <!-- Dynamic Content Display Container -->
+        <div id="public-dynamic-content" class="space-y-4 sm:space-y-6"></div>
+
+    </section>
+
+    <!-- ADMIN VIEW SECTION -->
+    <section id="admin-view-section" class="hidden space-y-4 sm:space-y-6">
+        
+        <!-- Dev Authentication Lock Modal Screen -->
+        <div id="auth-modal" class="glass-panel p-5 sm:p-8 rounded-3xl max-w-md mx-auto text-center space-y-4 sm:space-y-5 my-6 sm:my-8">
+            <div class="w-14 h-14 bg-[var(--world-gold)] rounded-2xl flex items-center justify-center mx-auto text-black text-2xl shadow-lg shadow-[var(--world-gold)]/20">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div>
+                <h2 class="heading-font text-xl sm:text-2xl font-black italic">Admin Access Portal</h2>
+                <p class="text-[11px] sm:text-xs text-zinc-400 mt-1">Enter authorized password to manage match scores</p>
+            </div>
+
+            <div class="space-y-3">
+                <input type="password" id="admin-passcode" placeholder="Enter password..." class="w-full bg-black border border-zinc-700 rounded-2xl p-3.5 text-sm text-white text-center font-bold tracking-widest focus:outline-none focus:border-[var(--world-gold)]">
+                <button onclick="handleLogin()" class="w-full py-3.5 bg-[var(--world-gold)] text-black font-black uppercase rounded-2xl hover:bg-[var(--world-gold-hover)] transition shadow-lg text-xs sm:text-sm">
+                    Unlock Admin Controls
+                </button>
+            </div>
+        </div>
+
+        <!-- Unlocked Admin Panel -->
+        <div id="admin-panel-content" class="hidden space-y-4 sm:space-y-6">
+            
+            <!-- Admin Filter Bar -->
+            <div class="glass-panel p-3.5 sm:p-4 rounded-3xl space-y-3 sm:space-y-4">
+                <div class="flex flex-col gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <!-- Stage Select -->
+                        <select id="admin-stage-select" onchange="renderAdminMatches()" class="w-full bg-black border border-zinc-700 text-xs font-bold rounded-xl px-3 py-3 text-white focus:outline-none focus:border-[var(--world-gold)]">
+                            <option value="ALL">All Stages & Rounds</option>
+                            <option value="GROUP_R1">Group Stage - Round 1</option>
+                            <option value="GROUP_R2">Group Stage - Round 2</option>
+                            <option value="GROUP_R3">Group Stage - Round 3</option>
+                            <option value="R16">Round of 16</option>
+                            <option value="QF">Quarter-Finals</option>
+                            <option value="SF">Semi-Finals</option>
+                            <option value="THIRD">Third-Place Match</option>
+                            <option value="FINAL">Final</option>
+                        </select>
+                        
+                        <!-- Group Select -->
+                        <select id="admin-group-select" onchange="renderAdminMatches()" class="w-full bg-black border border-zinc-700 text-xs font-bold rounded-xl px-3 py-3 text-white focus:outline-none">
+                            <option value="ALL">All Groups</option>
+                        </select>
+
+                        <!-- Status Filter -->
+                        <select id="admin-status-select" onchange="renderAdminMatches()" class="w-full bg-black border border-zinc-700 text-xs font-bold rounded-xl px-3 py-3 text-white focus:outline-none">
+                            <option value="ALL">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="finished">Finished</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative w-full">
+                        <i class="fas fa-search absolute left-3.5 top-3.5 text-xs text-zinc-500"></i>
+                        <input type="text" id="admin-search" onkeyup="renderAdminMatches()" placeholder="Search match or team..." class="w-full bg-black border border-zinc-700 rounded-xl pl-9 pr-3 py-3 text-xs text-white focus:outline-none focus:border-[var(--world-gold)]">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Matches Grid -->
+            <div id="admin-matches-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"></div>
+        </div>
+
+    </section>
+
+</main>
+
+<div id="toast" class="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none bg-zinc-900 border border-[var(--world-gold)] px-4 sm:px-5 py-3.5 rounded-2xl shadow-2xl flex items-center space-x-3 transition-all duration-300">
+    <i id="toast-icon" class="fas fa-check-circle text-[var(--world-gold)] text-xl shrink-0"></i>
+    <span id="toast-msg" class="text-xs font-bold text-white truncate">Result saved successfully!</span>
+</div>
+
+<!-- FIREBASE SDK & CORE LOGIC -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBULCL5Oj4k6wC0If5SNDKU9Qy0HdaqVS8",
+        authDomain: "masterleague-8ebbb.firebaseapp.com",
+        projectId: "masterleague-8ebbb",
+        storageBucket: "masterleague-8ebbb.firebasestorage.app",
+        messagingSenderId: "81387077466",
+        appId: "1:81387077466:web:7605cb7b6fdb6ba499bd63",
+        measurementId: "G-2HZQXFJWJD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    function updateCloudBadge(status, message) {
+        const badge = document.getElementById('cloud-status-badge');
+        if (!badge) return;
+
+        if (status === 'connected') {
+            badge.className = "px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1";
+            badge.innerHTML = `<i class="fas fa-cloud text-emerald-400"></i> Cloud Live`;
+        } else if (status === 'restricted') {
+            badge.className = "px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1";
+            badge.innerHTML = `<i class="fas fa-exclamation-triangle text-rose-400"></i> Fallback (${message || 'Locked'})`;
+        } else {
+            badge.className = "px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1";
+            badge.innerHTML = `<i class="fas fa-circle-notch animate-spin text-[7px]"></i> Connecting...`;
+        }
+    }
+
+    signInAnonymously(auth).catch(err => {
+        console.warn("Firebase Auth Note:", err.message);
+        updateCloudBadge('restricted', 'Auth Blocked');
+    });
+
+    onAuthStateChanged(auth, user => {
+        currentUser = user;
+    });
+
+    window.CloudDataService = {
+        saveResultToCloud: async (matchId, payload) => {
+            const matchIdStr = String(matchId);
+            let cloudSaved = false;
+            let cloudErrorMsg = "";
+
+            try {
+                await setDoc(doc(db, "matchResults", matchIdStr), payload);
+                cloudSaved = true;
+                updateCloudBadge('connected');
+            } catch (err) {
+                console.error("Firestore Write Failed:", err);
+                cloudErrorMsg = err.code || err.message;
+                updateCloudBadge('restricted', 'Restricted');
+            }
+            return { cloudSaved, cloudErrorMsg };
+        },
+
+        deleteResultFromCloud: async (matchId) => {
+            const matchIdStr = String(matchId);
+            let cloudDeleted = false;
+            try {
+                await deleteDoc(doc(db, "matchResults", matchIdStr));
+                cloudDeleted = true;
+            } catch (err) {
+                console.error("Firestore Delete Failed:", err);
+            }
+            return { cloudDeleted };
+        },
+
+        subscribeToCloud: (callback) => {
+            let unsubscribeFS = () => {};
+            try {
+                unsubscribeFS = onSnapshot(collection(db, "matchResults"), (snapshot) => {
+                    const liveResults = {};
+                    snapshot.forEach(docSnap => {
+                        liveResults[docSnap.id] = docSnap.data();
+                    });
+                    callback(liveResults);
+                    updateCloudBadge('connected');
+                }, (err) => {
+                    console.warn("Firestore subscription restricted:", err.message);
+                    updateCloudBadge('restricted', 'Denied');
+                });
+            } catch (err) {
+                console.warn("Firestore listener error:", err.message);
+                updateCloudBadge('restricted', 'Offline');
+            }
+            return unsubscribeFS;
+        }
+    };
+</script>
+
+<!-- TOURNAMENT ENGINE & UI CONTROLLER -->
+<script>
+    const TELEGRAM_LINKS = {
+        "Czech Republic": "https://t.me/channyein199",
+        "Mexico": "https://t.me/amtNvm",
+        "South Africa": "https://t.me/minkhant090",
+        "South Korea": "https://t.me/penguin3244",
+
+        "Bosnia and Herzegovina": "https://t.me/aamk79",
+        "Canada": "https://t.me/leostar11122",
+        "Qatar": "https://t.me/Wolfy21002",
+        "Switzerland": "https://t.me/Novem899",
+
+        "Brazil": "https://t.me/Minthant_e2009",
+        "Haiti": "https://t.me/MinZawKhant19",
+        "Morocco": "https://t.me/layp07",
+        "Scotland": "https://t.me/aungnayzan",
+
+        "Australia": "https://t.me/swammie_chan",
+        "Paraguay": "https://t.me/Nyan428925",
+        "Turkey": "https://t.me/",
+        "USA": "https://t.me/Bs134679",
+
+        "Curaçao": "https://t.me/Kaday_20",
+        "Ecuador": "https://t.me/Everh1over",
+        "Germany": "https://t.me/zarniko77",
+        "Ivory Coast": "https://t.me/zeusace0",
+
+        "Japan": "https://t.me/Leo_Mrphy",
+        "Netherlands": "https://t.me/Ranger13102003",
+        "Sweden": "https://t.me/Sasuno11",
+        "Tunisia": "https://t.me/Ukawkyaw1985",
+
+        "Belgium": "https://t.me/",
+        "Egypt": "https://t.me/iz_szlai",
+        "Iran": "https://t.me/Williamhtmo",
+        "New Zealand": "https://t.me/ziel_ncl",
+
+        "Cape Verde": "https://t.me/a_saw_chan",
+        "Saudi Arabia": "https://t.me/Sakmkl",
+        "Spain": "https://t.me/Shinelay12390",
+        "Uruguay": "https://t.me/bobominhein"
+    };
+
+    const PLAYER_NAMES = [
+        "Czech Republic", "Mexico", "South Africa", "South Korea",
+        "Bosnia and Herzegovina", "Canada", "Qatar", "Switzerland",
+        "Brazil", "Haiti", "Morocco", "Scotland",
+        "Australia", "Paraguay", "Turkey", "USA",
+        "Curaçao", "Ecuador", "Germany", "Ivory Coast",
+        "Japan", "Netherlands", "Sweden", "Tunisia",
+        "Belgium", "Egypt", "Iran", "New Zealand",
+        "Cape Verde", "Saudi Arabia", "Spain", "Uruguay"
+    ];
+
+    const GROUPS = "ABCDEFGH".split("");
+
+    const TEAMS = Object.freeze(PLAYER_NAMES.map((name, index) => {
+        const groupIndex = Math.floor(index / 4);
+        return Object.freeze({
+            id: index + 1,
+            name: name,
+            group: GROUPS[groupIndex] || "H",
+            link: TELEGRAM_LINKS[name] || "#"
+        });
+    }));
+
+    const rawFixtures = [];
+    let matchCounter = 1;
+
+    GROUPS.forEach(group => {
+        const groupTeams = TEAMS.filter(t => t.group === group);
+        const pairings = [
+            { h: 0, a: 1, round: 1 },
+            { h: 2, a: 3, round: 1 },
+            { h: 0, a: 2, round: 2 },
+            { h: 1, a: 3, round: 2 },
+            { h: 0, a: 3, round: 3 },
+            { h: 1, a: 2, round: 3 }
         ];
 
-        const initialTeams = fixedTeams.map((team, i) => ({ id: i, name: team.name, logo: team.logo, telegram: team.telegram }));
+        pairings.forEach(p => {
+            rawFixtures.push(Object.freeze({
+                id: matchCounter++,
+                stage: "GROUP",
+                group: group,
+                round: p.round,
+                home: groupTeams[p.h].name,
+                away: groupTeams[p.a].name
+            }));
+        });
+    });
 
-        // Application State စနစ်တစ်ခုလုံးကို ထိန်းချုပ်မည့် နေရာ
-        window.state = {
-            isAdmin: false,
-            user: null,
-            teams: [...initialTeams], 
-            rounds: Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] })),
-            knockout: { playoffs: [], r16: [], qf: [], sf: [], final: [] },
-            currentRound: 1,
-            activeTab: 'standing',
-            isLeagueStarted: false,
-            potr: {},
-            modal: {
-                isOpen: false,
-                title: "",
-                message: "",
-                onConfirm: null,
-                showCancel: true
-            }
-        };
+    const GROUP_FIXTURES = Object.freeze(rawFixtures);
 
-        const getTournamentDoc = () => doc(db, 'tournaments', appId);
+    const LOCAL_STORAGE_KEY = "master_league_32_results_v1";
+    let matchResults = {};
+    let activeTab = "public";
+    let activePublicStage = "group";
+    let activeGroupRound = 1;
+    let isAdminUnlocked = false;
 
-        // ဒေတာများကို Firebase Cloud သို့ သိမ်းဆည်းရန်
-        const saveToCloud = async () => {
-            if (!window.state.user || !window.state.isAdmin) return;
-            try {
-                await setDoc(getTournamentDoc(), {
-                    teams: window.state.teams,
-                    rounds: window.state.rounds,
-                    knockout: window.state.knockout,
-                    isLeagueStarted: window.state.isLeagueStarted,
-                    potr: window.state.potr,
-                    currentRound: window.state.currentRound
-                }, { merge: true });
-            } catch (e) { console.error("Cloud Save Error: ", e); }
-        };
+    function loadLocalResults() {
+        try {
+            const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+            matchResults = stored ? JSON.parse(stored) : {};
+        } catch (e) {
+            console.error("Error reading storage:", e);
+            matchResults = {};
+        }
+    }
 
-        // Real-time Sync လုပ်ဆောင်ချက် (ဒေတာဘေ့စ်တွင် အမည်လွတ်နေပါက Fixed Team အမည်များနှင့် Logo များဖြင့် အလိုအလျောက် အစားထိုးမည်)
-        const startSync = async () => {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    window.state.user = user;
-                    onSnapshot(getTournamentDoc(), (docSnap) => {
-                        if (docSnap.exists()) {
-                            const data = docSnap.data();
-                            if (data.teams) {
-                                // DB မှ အသင်းဒေတာဟောင်းများကို Fixed အသင်းစာရင်းဖြင့် ပေါင်းစပ်ညှိနှိုင်းခြင်း
-                                const mergedTeams = initialTeams.map((defaultTeam, idx) => {
-                                    const dbTeam = data.teams[idx];
-                                    const activeName = (dbTeam && dbTeam.name && dbTeam.name.trim() !== "") ? dbTeam.name : defaultTeam.name;
-                                    // နာမည်ပြောင်းသွားလျှင် Logo ပါပြောင်းရန် သို့မဟုတ် Default Logo ကို ဆက်သုံးရန်
-                                    const matchedLogo = fixedTeams.find(ft => ft.name.toLowerCase() === activeName.toLowerCase())?.logo || dbTeam?.logo || defaultTeam.logo;
-                                    const matchedTelegram = dbTeam?.telegram || defaultTeam.telegram || "";
-                                    return {
-                                        id: idx,
-                                        name: activeName,
-                                        logo: matchedLogo,
-                                        telegram: matchedTelegram
-                                    };
-                                });
-                                data.teams = mergedTeams;
-                            } else {
-                                data.teams = [...initialTeams];
-                            }
-                            Object.assign(window.state, data);
-                            refreshUI();
-                        }
-                    }, (err) => console.error("Sync Error: ", err));
-                }
-            });
-            await signInAnonymously(auth);
-        };
+    function saveLocalResults() {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(matchResults));
+        } catch (e) {
+            console.error("Error writing storage:", e);
+        }
+    }
 
-        startSync();
-
-        // Custom Modal စနစ် (Native Alert/Confirm အစားထိုးရန်)
-        window.showModal = (title, message, onConfirm, showCancel = true) => {
-            window.state.modal = {
-                isOpen: true,
-                title,
-                message,
-                onConfirm,
-                showCancel
+    function calculateStandings(teams, fixtures, resultsMap) {
+        const standingsMap = {};
+        teams.forEach(t => {
+            standingsMap[t.name] = {
+                id: t.id,
+                name: t.name,
+                group: t.group,
+                link: t.link,
+                m: 0, w: 0, d: 0, l: 0,
+                gf: 0, ga: 0, gd: 0, pts: 0
             };
-            refreshUI();
-        };
+        });
 
-        window.closeModal = () => {
-            window.state.modal.isOpen = false;
-            refreshUI();
-        };
+        fixtures.forEach(fixture => {
+            const result = resultsMap[fixture.id];
+            if (result && result.status === "finished" && result.homeScore !== null && result.awayScore !== null) {
+                const home = standingsMap[fixture.home];
+                const away = standingsMap[fixture.away];
 
-        // သက်ဆိုင်ရာ Telegram Account သို့ တိုက်ရိုက် ဦးတည်ဖွင့်လှစ်ပေးရန် Helper Function
-        window.openTelegram = (username) => {
-            if (username && username.trim() !== "") {
-                const cleanUsername = username.replace('@', '').trim();
-                window.open(`https://t.me/${cleanUsername}`, '_blank');
-            } else {
-                window.showModal("သတိပေးချက်", "ဤအသင်းအတွက် Telegram Account ချိတ်ဆက်ထားခြင်း မရှိသေးပါ။ Admin setup တွင် သတ်မှတ်ပေးပါ။", () => window.closeModal(), false);
-            }
-        };
+                if (home && away) {
+                    const hS = Number(result.homeScore);
+                    const aS = Number(result.awayScore);
 
-        // UI အားလုံးကို Dynamic ပြန်လည်ရေးဆွဲပေးမည့် Function
-        window.refreshUI = () => {
-            const container = document.getElementById('content');
-            renderNav();
-            renderHeader();
-            if(window.state.activeTab === 'setup') renderSetup(container);
-            else if(window.state.activeTab === 'rounds') renderRounds(container);
-            else if(window.state.activeTab === 'standing') renderTable(container);
-            else if(window.state.activeTab === 'potr') renderPOTR(container);
-            else if(window.state.activeTab === 'knockout') renderKnockout(container);
-            renderModal();
-            document.getElementById('loader').style.display = 'none';
-        };
+                    home.m++; away.m++;
+                    home.gf += hS; home.ga += aS;
+                    away.gf += aS; away.ga += hS;
 
-        window.renderNav = () => {
-            const tabs = ['rounds', 'standing', 'knockout', 'potr', 'setup'];
-            const labels = ['Fixtures', 'Table', 'Knockout', 'POTR', 'Admin'];
-            document.getElementById('nav-bar').innerHTML = tabs.map((t, i) => {
-                if (t === 'setup' && !window.state.isAdmin) return '';
-                const isActive = window.state.activeTab === t;
-                return `
-                <button onclick="changeTab('${t}')" class="flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all relative ${isActive ? 'text-blue-500 scale-110' : 'text-zinc-500'}">
-                    ${isActive ? '<div class="absolute -top-1 w-8 h-1 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,1)]"></div>' : ''}
-                    <span class="text-[11px] font-black uppercase tracking-widest">${labels[i]}</span>
-                </button>`;
-            }).join('');
-        };
-
-        const renderTable = (container) => {
-            if(!window.state.isLeagueStarted) { 
-                container.innerHTML = `<div class="p-20 text-center opacity-30 italic text-sm">League Phase စတင်ရန် စောင့်ဆိုင်းနေပါသည်...</div>`; 
-                return; 
-            }
-            
-            let statsMap = {};
-            window.state.teams.forEach(t => statsMap[t.id] = { id: t.id, name: t.name || `Manager ${t.id+1}`, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 });
-            
-            window.state.rounds.forEach(r => {
-                r.matches.forEach(m => {
-                    if(m.hs !== null && m.as !== null) {
-                        const h = statsMap[m.h], a = statsMap[m.a];
-                        if(!h || !a) return;
-                        h.p++; a.p++; h.gf += m.hs; h.ga += m.as; a.gf += m.as; a.ga += m.hs;
-                        if(m.hs > m.as) { h.w++; h.pts += 3; a.l++; }
-                        else if(m.as > m.hs) { a.w++; a.pts += 3; h.l++; }
-                        else { h.d++; a.d++; h.pts += 1; a.pts += 1; }
-                        h.gd = h.gf - h.ga; a.gd = a.gf - a.ga;
+                    if (hS > aS) {
+                        home.w++; home.pts += 3; away.l++;
+                    } else if (hS < aS) {
+                        away.w++; away.pts += 3; home.l++;
+                    } else {
+                        home.d++; away.d++; home.pts += 1; away.pts += 1;
                     }
-                });
-            });
 
-            const stats = Object.values(statsMap).filter(s => {
-                const team = window.state.teams.find(t => t.id === s.id);
-                return team && team.name.trim() !== "";
-            }).sort((a,b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-
-            container.innerHTML = `
-                <div class="bg-zinc-900/40 rounded-[2rem] border border-white/5 overflow-hidden overflow-x-auto no-scrollbar">
-                    <table class="w-full text-left min-w-[650px]">
-                        <thead>
-                            <tr class="text-[8px] uppercase font-black text-zinc-500 border-b border-white/5 bg-white/[0.02]">
-                                <th class="p-5 pl-8">Pos Manager</th>
-                                <th class="p-5 text-center">P</th><th class="p-5 text-center">W</th><th class="p-5 text-center">D</th><th class="p-5 text-center">L</th>
-                                <th class="p-5 text-center">GF</th><th class="p-5 text-center">GA</th><th class="p-5 text-center">GD</th>
-                                <th class="p-5 text-center text-blue-500">Pts</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${stats.map((s,i) => {
-                                const team = window.state.teams.find(t => t.id === s.id) || {};
-                                const placeholderUrl = `https://placehold.co/40x40/1f2937/ffffff?text=${encodeURIComponent(s.name.substring(0,2).toUpperCase())}`;
-                                return `
-                                <tr class="border-b border-white/[0.02] ${i < 8 ? 'bg-green-500/5' : (i < 24 ? 'bg-blue-500/5' : '')}">
-                                    <td class="p-4 pl-8 flex items-center gap-3 cursor-pointer group select-none active:scale-95 transition-transform" onclick="openTelegram('${team.telegram}')">
-                                        <span class="text-[10px] font-black ${i < 8 ? 'text-green-500' : (i < 24 ? 'text-blue-500' : 'opacity-20')}">${i+1}</span>
-                                        <div class="relative">
-                                            <img src="${team.logo || placeholderUrl}" 
-                                                 onerror="this.onerror=null; this.src='${placeholderUrl}'" 
-                                                 class="w-6 h-6 object-contain flex-shrink-0 bg-zinc-950/30 p-0.5 rounded-md">
-                                            <div class="absolute -bottom-1 -right-1 bg-[#0088cc] text-[6px] text-white rounded-full w-3 h-3 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✈</div>
-                                        </div>
-                                        <span class="text-xs font-bold text-zinc-200 group-hover:text-blue-400 transition-colors truncate max-w-[150px]">${s.name}</span>
-                                    </td>
-                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.p}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.w}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.d}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.l}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.gf}</td>
-                                    <td class="p-4 text-center text-zinc-400 text-[11px]">${s.ga}</td>
-                                    <td class="p-4 text-center font-bold text-[11px] ${s.gd > 0 ? 'text-emerald-500' : (s.gd < 0 ? 'text-red-500' : 'text-zinc-500')}">${s.gd > 0 ? '+' + s.gd : s.gd}</td>
-                                    <td class="p-4 text-center font-black text-blue-500 text-base">${s.pts}</td>
-                                </tr>`;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        };
-
-        window.renderSetup = (container) => {
-            if (window.state.teams.length < 48) {
-                for (let i = window.state.teams.length; i < 48; i++) {
-                    window.state.teams.push({ id: i, name: initialTeams[i]?.name || "", logo: initialTeams[i]?.logo || "", telegram: initialTeams[i]?.telegram || "" });
+                    home.gd = home.gf - home.ga;
+                    away.gd = away.gf - away.ga;
                 }
             }
+        });
 
-            container.innerHTML = `
-                <div class="space-y-6">
-                    <div class="bg-zinc-900/60 p-5 rounded-[2rem] border border-white/5">
-                        <div class="flex justify-between items-center mb-4 px-2">
-                            <h3 class="text-[11px] font-black uppercase text-blue-500 tracking-widest">Fixed Teams Registration (48 Slots)</h3>
-                            <span class="text-[10px] font-bold text-zinc-500">${window.state.teams.filter(t => t.name.trim() !== "").length} / 48</span>
-                        </div>
-                        <div class="grid grid-cols-1 gap-2 max-h-[60vh] overflow-y-auto pr-2 custom-scroll">
-                            ${window.state.teams.map(t => {
-                                const placeholderUrl = `https://placehold.co/40x40/1f2937/ffffff?text=${encodeURIComponent((t.name || "T").substring(0,2).toUpperCase())}`;
-                                return `
-                                <div class="flex items-center gap-3 bg-black/40 p-2 rounded-xl border border-white/5 group hover:border-blue-500/30 transition-all">
-                                    <span class="text-[10px] w-8 text-center font-black ${t.name ? 'text-blue-500' : 'text-zinc-700'}">${t.id+1}</span>
-                                    <img src="${t.logo || placeholderUrl}" 
-                                         onerror="this.onerror=null; this.src='${placeholderUrl}'" 
-                                         class="w-6 h-6 object-contain flex-shrink-0 bg-zinc-950/30 p-0.5 rounded-md">
-                                    <div class="flex-1 flex flex-col gap-1">
-                                        <input type="text" 
-                                               value="${t.name || ''}" 
-                                               onchange="updateTeamName(${t.id}, this.value)" 
-                                               class="bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 text-zinc-200 w-full" 
-                                               placeholder="Enter Team Name">
-                                        <div class="flex items-center gap-1 text-[10px]">
-                                            <span class="text-blue-500 font-bold">t.me/</span>
-                                            <input type="text" 
-                                                   value="${t.telegram || ''}" 
-                                                   onchange="updateTeamTelegram(${t.id}, this.value)" 
-                                                   class="bg-transparent outline-none placeholder:text-zinc-700 text-zinc-400 font-semibold w-full" 
-                                                   placeholder="telegram_username">
-                                        </div>
-                                    </div>
-                                    ${t.name ? `<div class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>` : ''}
-                                </div>`;
-                            }).join('')}
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="generateFixtures()" class="py-4 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/20">Generate 8 Rounds</button>
-                        <button onclick="startLeague()" class="py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-600/20">Start League</button>
-                    </div>
-                    <button onclick="resetTournament()" class="w-full py-4 bg-red-600/10 hover:bg-red-600/20 text-red-500 rounded-2xl font-black text-[9px] uppercase tracking-widest border border-red-500/10 transition-all">Reset All Tournament Data</button>
-                </div>`;
-        };
+        const groupStandings = {};
+        GROUPS.forEach(g => {
+            const groupTeams = Object.values(standingsMap).filter(t => t.group === g);
+            groupTeams.sort((a, b) => {
+                if (b.pts !== a.pts) return b.pts - a.pts;
+                if (b.gd !== a.gd) return b.gd - a.gd;
+                return b.gf - a.gf;
+            });
+            groupStandings[g] = groupTeams;
+        });
 
-        const renderRounds = (container) => {
-            if(!window.state.isLeagueStarted) { 
-                container.innerHTML = `<div class="py-20 text-center opacity-40 italic text-sm">League Phase မစတင်ရသေးပါ။ Admin Panel တွင် Start လုပ်ပါ။</div>`; 
-                return; 
+        return groupStandings;
+    }
+
+    function isGroupStageComplete(resultsMap) {
+        for (let i = 1; i <= 48; i++) {
+            const res = resultsMap[i];
+            if (!res || res.status !== "finished") return false;
+        }
+        return true;
+    }
+
+    function getQualifiedTeamsData(resultsMap) {
+        const groupStandings = calculateStandings(TEAMS, GROUP_FIXTURES, resultsMap);
+        const winners = {};
+        const runnersUp = {};
+        
+        GROUPS.forEach(g => {
+            const list = groupStandings[g];
+            if (list && list.length >= 2) {
+                winners[g] = { ...list[0], group: g, position: 1 };
+                runnersUp[g] = { ...list[1], group: g, position: 2 };
             }
-            const rIdx = window.state.currentRound - 1;
-            const r = window.state.rounds[rIdx] || { matches: [] };
-            container.innerHTML = `
-                <div class="flex items-center justify-between mb-6 bg-zinc-900/50 p-2 rounded-2xl border border-white/5">
-                    <button onclick="moveRound(-1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 active:scale-90 transition-all">←</button>
-                    <div class="text-center"><span class="text-[10px] font-black uppercase tracking-widest text-blue-500">Matchday ${window.state.currentRound}</span></div>
-                    <button onclick="moveRound(1)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 active:scale-90 transition-all">→</button>
-                </div>
-                <div class="space-y-2">
-                    ${r.matches.length === 0 ? `<div class="py-10 text-center opacity-30 text-[10px]">ပွဲစဉ်များ မရှိသေးပါ</div>` : ''}
-                    ${r.matches.map((m, i) => {
-                        const hT = window.state.teams.find(t => t.id === m.h) || { name: 'TBA', logo: "", telegram: "" };
-                        const aT = window.state.teams.find(t => t.id === m.a) || { name: 'TBA', logo: "", telegram: "" };
-                        
-                        const hTPlaceholder = `https://placehold.co/40x40/1f2937/ffffff?text=${encodeURIComponent(hT.name.substring(0,2).toUpperCase())}`;
-                        const aTPlaceholder = `https://placehold.co/40x40/1f2937/ffffff?text=${encodeURIComponent(aT.name.substring(0,2).toUpperCase())}`;
+        });
 
-                        let hsColor = 'text-white', asColor = 'text-white';
-                        if (m.hs !== null && m.as !== null) {
-                            if (m.hs > m.as) { hsColor = 'text-emerald-500'; asColor = 'text-red-500'; }
-                            else if (m.as > m.hs) { asColor = 'text-emerald-500'; hsColor = 'text-red-500'; }
-                            else { hsColor = 'text-yellow-500'; asColor = 'text-yellow-500'; }
-                        }
-                        return `
-                        <div class="bg-zinc-900/40 p-3 rounded-2xl border border-white/5 flex items-center gap-3">
-                            <div class="flex-1 flex items-center justify-end gap-2 text-right font-bold text-[11px] truncate text-zinc-100 cursor-pointer hover:text-blue-400 select-none active:scale-95 transition-transform" onclick="openTelegram('${hT.telegram}')">
-                                <span class="truncate">${hT.name}</span>
-                                <img src="${hT.logo || hTPlaceholder}" 
-                                     onerror="this.onerror=null; this.src='${hTPlaceholder}'" 
-                                     class="w-5 h-5 object-contain flex-shrink-0 bg-zinc-950/30 p-0.5 rounded-md">
+        return {
+            groupStandings,
+            winners,
+            runnersUp,
+            isComplete: isGroupStageComplete(resultsMap)
+        };
+    }
+
+    function generateRoundOf16Fixtures(qualifiedData) {
+        const { winners, runnersUp } = qualifiedData;
+
+        // Traditional 2018 World Cup Matchups
+        const matchups = [
+            { id: 49, hGroup: 'A', hPos: '1', aGroup: 'B', aPos: '2' }, // 1A vs 2B
+            { id: 50, hGroup: 'C', hPos: '1', aGroup: 'D', aPos: '2' }, // 1C vs 2D
+            { id: 51, hGroup: 'E', hPos: '1', aGroup: 'F', aPos: '2' }, // 1E vs 2F
+            { id: 52, hGroup: 'G', hPos: '1', aGroup: 'H', aPos: '2' }, // 1G vs 2H
+            { id: 53, hGroup: 'B', hPos: '1', aGroup: 'A', aPos: '2' }, // 1B vs 2A
+            { id: 54, hGroup: 'D', hPos: '1', aGroup: 'C', aPos: '2' }, // 1D vs 2C
+            { id: 55, hGroup: 'F', hPos: '1', aGroup: 'E', aPos: '2' }, // 1F vs 2E
+            { id: 56, hGroup: 'H', hPos: '1', aGroup: 'G', aPos: '2' }  // 1H vs 2G
+        ];
+
+        return matchups.map((m, i) => {
+            const homeTeam = winners[m.hGroup]?.name || `Winner Grp ${m.hGroup}`;
+            const awayTeam = runnersUp[m.aGroup]?.name || `Runner-Up Grp ${m.aGroup}`;
+
+            return {
+                id: m.id,
+                stage: "R16",
+                matchNumber: i + 1,
+                home: homeTeam,
+                away: awayTeam,
+                nextMatchId: 57 + Math.floor(i / 2)
+            };
+        });
+    }
+
+    function generateQuarterFinalsFixtures(r16Results) {
+        const matches = [];
+        for (let i = 0; i < 4; i++) {
+            const m1Id = 49 + (i * 2);
+            const m2Id = 50 + (i * 2);
+            
+            const w1 = r16Results[m1Id]?.winnerName || `Winner R16 #${(i*2)+1}`;
+            const w2 = r16Results[m2Id]?.winnerName || `Winner R16 #${(i*2)+2}`;
+
+            matches.push({
+                id: 57 + i,
+                stage: "QF",
+                matchNumber: i + 1,
+                home: w1,
+                away: w2,
+                nextMatchId: 61 + Math.floor(i / 2)
+            });
+        }
+        return matches;
+    }
+
+    function generateSemiFinalsFixtures(qfResults) {
+        const matches = [];
+        for (let i = 0; i < 2; i++) {
+            const m1Id = 57 + (i * 2);
+            const m2Id = 58 + (i * 2);
+            
+            const w1 = qfResults[m1Id]?.winnerName || `Winner QF #${(i*2)+1}`;
+            const w2 = qfResults[m2Id]?.winnerName || `Winner QF #${(i*2)+2}`;
+
+            matches.push({
+                id: 61 + i,
+                stage: "SF",
+                matchNumber: i + 1,
+                home: w1,
+                away: w2,
+                nextMatchId: i === 0 ? 63 : 64
+            });
+        }
+        return matches;
+    }
+
+    function generateThirdAndFinalFixtures(sfResults) {
+        const sf1Res = sfResults[61];
+        const sf2Res = sfResults[62];
+
+        const w1 = sf1Res?.winnerName || "Winner SF #1";
+        const w2 = sf2Res?.winnerName || "Winner SF #2";
+        const l1 = sf1Res?.loserName || "Loser SF #1";
+        const l2 = sf2Res?.loserName || "Loser SF #2";
+
+        return [
+            {
+                id: 63,
+                stage: "THIRD",
+                matchNumber: 1,
+                home: l1,
+                away: l2,
+                nextMatchId: null
+            },
+            {
+                id: 64,
+                stage: "FINAL",
+                matchNumber: 1,
+                home: w1,
+                away: w2,
+                nextMatchId: null
+            }
+        ];
+    }
+
+    function getAllTournamentFixtures(resultsMap) {
+        const qData = getQualifiedTeamsData(resultsMap);
+        const r16 = generateRoundOf16Fixtures(qData);
+        
+        const r16Res = {};
+        r16.forEach(m => { if(resultsMap[m.id]) r16Res[m.id] = resultsMap[m.id]; });
+        const qf = generateQuarterFinalsFixtures(r16Res);
+
+        const qfRes = {};
+        qf.forEach(m => { if(resultsMap[m.id]) qfRes[m.id] = resultsMap[m.id]; });
+        const sf = generateSemiFinalsFixtures(qfRes);
+
+        const sfRes = {};
+        sf.forEach(m => { if(resultsMap[m.id]) sfRes[m.id] = resultsMap[m.id]; });
+        const finalsArr = generateThirdAndFinalFixtures(sfRes);
+
+        return {
+            R16: r16,
+            QF: qf,
+            SF: sf,
+            THIRD: [finalsArr[0]],
+            FINAL: [finalsArr[1]]
+        };
+    }
+
+    // Attach all core navigation & click handlers directly to window to avoid scope issues
+    window.switchTab = function(tab) {
+        activeTab = tab;
+        const pubSec = document.getElementById('public-view-section');
+        const adminSec = document.getElementById('admin-view-section');
+        const btnPub = document.getElementById('nav-public');
+        const btnAdmin = document.getElementById('nav-admin');
+
+        if (tab === 'public') {
+            pubSec.classList.remove('hidden');
+            adminSec.classList.add('hidden');
+            btnPub.className = "px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-[var(--world-gold)] text-black shadow-md flex items-center gap-1.5 sm:gap-2";
+            btnAdmin.className = "px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all text-zinc-400 hover:text-white flex items-center gap-1.5 sm:gap-2";
+            renderPublicView();
+        } else {
+            pubSec.classList.add('hidden');
+            adminSec.classList.remove('hidden');
+            btnAdmin.className = "px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all bg-[var(--world-gold)] text-black shadow-md flex items-center gap-1.5 sm:gap-2";
+            btnPub.className = "px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-black uppercase transition-all text-zinc-400 hover:text-white flex items-center gap-1.5 sm:gap-2";
+            
+            if (isAdminUnlocked) {
+                document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('admin-panel-content').classList.remove('hidden');
+                renderAdminMatches();
+            } else {
+                document.getElementById('auth-modal').classList.remove('hidden');
+                document.getElementById('admin-panel-content').classList.add('hidden');
+            }
+        }
+    };
+
+    window.setPublicStage = function(stage) {
+        activePublicStage = stage;
+        document.querySelectorAll('.p-stage-btn').forEach(btn => {
+            btn.classList.remove('bg-[var(--world-gold)]', 'text-black');
+            btn.classList.add('bg-zinc-900', 'text-zinc-400');
+        });
+        const activeBtn = document.getElementById(`p-stage-${stage}`);
+        if(activeBtn) {
+            activeBtn.classList.remove('bg-zinc-900', 'text-zinc-400');
+            activeBtn.classList.add('bg-[var(--world-gold)]', 'text-black');
+        }
+        renderPublicView();
+    };
+
+    window.setGroupRound = function(r) {
+        activeGroupRound = r;
+        renderPublicView();
+    };
+
+    function renderPublicView() {
+        const container = document.getElementById('public-dynamic-content');
+        if(!container) return;
+
+        if (activePublicStage === 'group') {
+            renderPublicGroupStage(container);
+        } else if (activePublicStage === 'standings') {
+            renderPublicStandings(container);
+        } else if (['r16', 'qf', 'sf', 'third', 'final'].includes(activePublicStage)) {
+            renderPublicKnockoutStage(container, activePublicStage.toUpperCase());
+        } else if (activePublicStage === 'bracket') {
+            renderPublicBracket(container);
+        } else if (activePublicStage === 'status') {
+            renderPublicTournamentStatus(container);
+        }
+    }
+
+    function renderPublicGroupStage(container) {
+        const fixtures = GROUP_FIXTURES;
+
+        container.innerHTML = `
+        <div class="glass-panel p-3.5 sm:p-4 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar w-full md:w-auto pb-1 md:pb-0">
+                <button onclick="setGroupRound(1)" id="pub-round-1" class="pub-r-btn px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-black uppercase transition-all ${activeGroupRound === 1 ? 'bg-[var(--world-gold)] text-black shadow-lg' : 'bg-zinc-900 text-zinc-400'} shrink-0">Round 1</button>
+                <button onclick="setGroupRound(2)" id="pub-round-2" class="pub-r-btn px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-black uppercase transition-all ${activeGroupRound === 2 ? 'bg-[var(--world-gold)] text-black shadow-lg' : 'bg-zinc-900 text-zinc-400'} shrink-0">Round 2</button>
+                <button onclick="setGroupRound(3)" id="pub-round-3" class="pub-r-btn px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-black uppercase transition-all ${activeGroupRound === 3 ? 'bg-[var(--world-gold)] text-black shadow-lg' : 'bg-zinc-900 text-zinc-400'} shrink-0">Round 3</button>
+            </div>
+            <div class="w-full md:w-auto">
+                <select id="pub-group-select" onchange="renderPublicView()" class="w-full md:w-auto bg-black border border-zinc-700 text-xs font-bold rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-[var(--world-gold)]">
+                    <option value="ALL">All Groups (A-H)</option>
+                    ${GROUPS.map(g => `<option value="${g}">Group ${g}</option>`).join('')}
+                </select>
+            </div>
+        </div>
+        <div id="fixture-container" class="space-y-3"></div>`;
+
+        const groupSelectEl = document.getElementById('pub-group-select');
+        const selectedGroup = groupSelectEl ? groupSelectEl.value : 'ALL';
+        
+        const filteredMatches = fixtures.filter(m => {
+            if (m.round !== activeGroupRound) return false;
+            if (selectedGroup !== "ALL" && m.group !== selectedGroup) return false;
+            return true;
+        });
+
+        const fixtureBox = document.getElementById('fixture-container');
+        if (filteredMatches.length === 0) {
+            fixtureBox.innerHTML = `<div class="p-8 text-center text-zinc-500 text-xs font-bold uppercase tracking-wider glass-panel rounded-2xl">No fixtures found</div>`;
+            return;
+        }
+
+        let lastGroup = "";
+        fixtureBox.innerHTML = filteredMatches.map(m => {
+            let header = m.group !== lastGroup ? (lastGroup = m.group, `<div class="group-header py-2 px-4 mt-4 mb-2 text-xs font-black text-[var(--world-gold)] uppercase italic">Group ${m.group}</div>`) : "";
+
+            const res = matchResults[m.id];
+            const hS = res && res.status === "finished" ? res.homeScore : null;
+            const aS = res && res.status === "finished" ? res.awayScore : null;
+            const hColor = hS !== null && hS > aS ? "text-emerald-400" : hS !== null && hS < aS ? "text-rose-400" : "text-yellow-400";
+            const aColor = aS !== null && aS > hS ? "text-emerald-400" : aS !== null && aS < hS ? "text-rose-400" : "text-yellow-400";
+
+            const homeLink = TELEGRAM_LINKS[m.home] || "#";
+            const awayLink = TELEGRAM_LINKS[m.away] || "#";
+
+            return header + `<div class="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-center justify-between gap-2">
+                <div class="flex-1 text-right text-xs sm:text-sm font-bold truncate">
+                    ${homeLink !== "#" ? `<a href="${homeLink}" target="_blank" class="team-link flex items-center justify-end gap-1.5"><span class="truncate">${m.home}</span><i class="fab fa-telegram text-sky-400 text-xs opacity-70 shrink-0"></i></a>` : m.home}
+                </div>
+                <div class="flex items-center space-x-2 px-1 sm:px-2 shrink-0">
+                    <div class="score-box ${hColor}">${hS !== null ? hS : '-'}</div>
+                    <span class="text-zinc-600 font-bold text-xs">:</span>
+                    <div class="score-box ${aColor}">${aS !== null ? aS : '-'}</div>
+                </div>
+                <div class="flex-1 text-left text-xs sm:text-sm font-bold truncate">
+                    ${awayLink !== "#" ? `<a href="${awayLink}" target="_blank" class="team-link flex items-center justify-start gap-1.5"><i class="fab fa-telegram text-sky-400 text-xs opacity-70 shrink-0"></i><span class="truncate">${m.away}</span></a>` : m.away}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderPublicStandings(container) {
+        const qData = getQualifiedTeamsData(matchResults);
+        const groupStandings = qData.groupStandings;
+
+        container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            ${GROUPS.map(g => {
+                const gt = groupStandings[g] || [];
+                return `<div class="glass-panel rounded-3xl p-4 sm:p-5 border border-[var(--world-gold)]/10 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                        <div class="text-xs font-black text-[var(--world-gold)] italic uppercase">GROUP ${g}</div>
+                        <span class="text-[9px] sm:text-[10px] text-zinc-500 uppercase font-mono">Top 2 Advance to R16</span>
+                    </div>
+                    <div class="overflow-x-auto no-scrollbar">
+                        <table class="w-full text-xs text-center min-w-[320px]">
+                            <thead>
+                                <tr class="text-[9px] sm:text-[10px] text-zinc-500 uppercase font-bold border-b border-white/5">
+                                    <th class="text-left pb-2 pl-1">Team</th>
+                                    <th class="pb-2">M</th>
+                                    <th class="pb-2">W</th>
+                                    <th class="pb-2">D</th>
+                                    <th class="pb-2">L</th>
+                                    <th class="pb-2">GD</th>
+                                    <th class="pb-2 text-[var(--world-gold)]">PTS</th>
+                                    <th class="pb-2 pr-1">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5 font-medium text-[11px] sm:text-xs">
+                                ${gt.map((t, idx) => {
+                                    let badge = `<span class="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold bg-rose-500/20 text-rose-400">OUT</span>`;
+                                    if (idx === 0 || idx === 1) {
+                                        badge = `<span class="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold bg-emerald-500/20 text-emerald-400">QUALIFIED</span>`;
+                                    }
+                                    return `
+                                    <tr class="h-10 hover:bg-white/5 transition">
+                                        <td class="text-left py-2 pl-1 font-bold truncate max-w-[100px] sm:max-w-[120px]">
+                                            <span class="text-[9px] sm:text-[10px] text-zinc-500 inline-block w-4">${idx + 1}.</span>
+                                            ${t.link !== "#" ? `<a href="${t.link}" target="_blank" class="team-link">${t.name}</a>` : t.name}
+                                        </td>
+                                        <td>${t.m}</td>
+                                        <td>${t.w}</td>
+                                        <td>${t.d}</td>
+                                        <td>${t.l}</td>
+                                        <td class="${t.gd > 0 ? 'text-emerald-400' : t.gd < 0 ? 'text-rose-400' : 'text-zinc-400'} font-bold">${t.gd > 0 ? '+' + t.gd : t.gd}</td>
+                                        <td class="font-black text-[var(--world-gold)]">${t.pts}</td>
+                                        <td class="pr-1">${badge}</td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>`;
+    }
+
+    function renderPublicKnockoutStage(container, stageKey) {
+        const qData = getQualifiedTeamsData(matchResults);
+        if (!qData.isComplete && stageKey === 'R16') {
+            container.innerHTML = `
+            <div class="glass-panel p-8 sm:p-12 text-center rounded-3xl space-y-4">
+                <div class="w-16 h-16 bg-rose-500/10 text-rose-400 rounded-3xl flex items-center justify-center mx-auto text-2xl border border-rose-500/30">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h3 class="heading-font text-lg sm:text-xl font-bold">Knockout Stage Locked</h3>
+                <p class="text-xs text-zinc-400 max-w-md mx-auto">Complete all 48 Group Stage matches to unlock the Round of 16 fixtures.</p>
+            </div>`;
+            return;
+        }
+
+        const allFixtures = getAllTournamentFixtures(matchResults);
+        const stageFixtures = allFixtures[stageKey] || [];
+
+        container.innerHTML = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between px-2">
+                <h2 class="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 italic flex items-center gap-2">
+                    <i class="fas fa-trophy text-[var(--world-gold)]"></i> ${stageKey === 'THIRD' ? 'Third-Place Match' : stageKey} Stage Fixtures
+                </h2>
+                <span class="text-[10px] text-zinc-500 font-mono">${stageFixtures.length} Matches</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                ${stageFixtures.map(m => {
+                    const res = matchResults[m.id] || {};
+                    const isFinished = res.status === "finished";
+                    const hS = isFinished ? res.homeScore : '-';
+                    const aS = isFinished ? res.awayScore : '-';
+                    const hPen = res.homePenalties !== undefined && res.homePenalties !== null ? `(${res.homePenalties})` : '';
+                    const aPen = res.awayPenalties !== undefined && res.awayPenalties !== null ? `(${res.awayPenalties})` : '';
+
+                    return `
+                    <div class="glass-panel rounded-3xl p-4 sm:p-5 flex flex-col justify-between space-y-3">
+                        <div class="flex items-center justify-between text-[11px] font-black tracking-widest text-zinc-400">
+                            <span class="text-[var(--world-gold)]">${stageKey} • MATCH #${m.matchNumber}</span>
+                            <span class="bg-black border border-zinc-800 px-2.5 py-1 rounded-full text-[10px] font-mono">ID: ${m.id}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 text-center py-2">
+                            <div class="flex-1 font-black text-xs sm:text-sm ${res.winner === 'home' ? 'text-emerald-400' : 'text-white'} truncate" title="${m.home}">${m.home} ${hPen}</div>
+                            <div class="flex items-center space-x-1.5 sm:space-x-2 px-1 shrink-0">
+                                <div class="score-box text-white">${hS}</div>
+                                <span class="text-zinc-600 font-bold text-xs">:</span>
+                                <div class="score-box text-white">${aS}</div>
                             </div>
-                            <div class="flex gap-1.5 items-center">
-                                <input type="number" value="${m.hs ?? ''}" onchange="updateScore(${rIdx}, ${i}, 'hs', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${hsColor}">
-                                <span class="opacity-10 text-[6px] font-black">VS</span>
-                                <input type="number" value="${m.as ?? ''}" onchange="updateScore(${rIdx}, ${i}, 'as', this.value)" ${!window.state.isAdmin?'readonly':''} 
-                                    class="w-8 h-8 bg-black rounded-lg text-center font-black border border-white/10 outline-none ${asColor}">
-                            </div>
-                            <div class="flex-1 flex items-center justify-start gap-2 text-left font-bold text-[11px] truncate text-zinc-100 cursor-pointer hover:text-blue-400 select-none active:scale-95 transition-transform" onclick="openTelegram('${aT.telegram}')">
-                                <img src="${aT.logo || aTPlaceholder}" 
-                                     onerror="this.onerror=null; this.src='${aTPlaceholder}'" 
-                                     class="w-5 h-5 object-contain flex-shrink-0 bg-zinc-950/30 p-0.5 rounded-md">
-                                <span class="truncate">${aT.name}</span>
-                            </div>
+                            <div class="flex-1 font-black text-xs sm:text-sm ${res.winner === 'away' ? 'text-emerald-400' : 'text-white'} truncate" title="${m.away}">${aPen} ${m.away}</div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-white/5 text-[11px]">
+                            <span class="text-zinc-400">Status: <strong class="${isFinished ? 'text-emerald-400' : 'text-amber-400'}">${isFinished ? 'FINISHED' : 'PENDING'}</strong></span>
+                            ${isFinished && res.winnerName ? `<span class="text-[var(--world-gold)] font-bold truncate max-w-[150px]">Winner: ${res.winnerName}</span>` : ''}
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+    }
+
+    function renderPublicBracket(container) {
+        const allFixtures = getAllTournamentFixtures(matchResults);
+        container.innerHTML = `
+        <div class="glass-panel rounded-3xl p-4 sm:p-6 space-y-4 overflow-x-auto">
+            <div class="flex items-center justify-between min-w-[900px] border-b border-white/5 pb-4">
+                <h2 class="heading-font text-base sm:text-lg font-black italic">Tournament Knockout Bracket (32-Team Tree)</h2>
+                <span class="text-xs text-zinc-400">Interactive Progression Tree</span>
+            </div>
+            <div class="flex space-x-8 min-w-[1000px] items-center justify-between">
+                <!-- R16 (8 Matches) -->
+                <div class="space-y-3 w-64">
+                    <div class="text-[10px] font-black uppercase text-zinc-500 tracking-widest text-center">Round of 16</div>
+                    ${allFixtures.R16.map(m => {
+                        const res = matchResults[m.id] || {};
+                        return `<div class="bg-black/60 border border-zinc-800 p-2.5 rounded-xl text-xs space-y-1">
+                            <div class="flex justify-between font-bold ${res.winner === 'home' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.home}</span><span>${res.homeScore ?? '-'}</span></div>
+                            <div class="flex justify-between font-bold ${res.winner === 'away' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.away}</span><span>${res.awayScore ?? '-'}</span></div>
                         </div>`;
                     }).join('')}
                 </div>
-            `;
-        };
-
-        const renderPOTR = (container) => {
-            const rd = window.state.potr[window.state.currentRound] || { name: 'TBA', gf: 0, ga: 0, img: '' };
-            container.innerHTML = `
-                <div class="bg-zinc-900/80 p-8 rounded-[3rem] border border-white/5 text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
-                    <p class="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em] mb-8">Matchday ${window.state.currentRound} MVP</p>
-                    <div class="relative w-44 h-44 mx-auto mb-8">
-                        <div class="w-full h-full rounded-full bg-blue-600/5 border-2 border-white/5 overflow-hidden flex items-center justify-center p-1">
-                            <div class="w-full h-full rounded-full overflow-hidden bg-zinc-800 flex items-center justify-center">
-                                ${rd.img ? `<img src="${rd.img}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-4xl opacity-20">🏆</div>`}
-                            </div>
-                        </div>
-                        ${window.state.isAdmin ? `
-                        <label class="absolute bottom-1 right-1 w-12 h-12 bg-blue-600 rounded-full border-4 border-black flex items-center justify-center cursor-pointer hover:scale-110 active:scale-90 transition-all shadow-xl">
-                            <span class="text-xs">📷</span> 
-                            <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
-                        </label>` : ''}
+                <!-- QF (4 Matches) -->
+                <div class="space-y-6 w-64">
+                    <div class="text-[10px] font-black uppercase text-zinc-500 tracking-widest text-center">Quarter-Finals</div>
+                    ${allFixtures.QF.map(m => {
+                        const res = matchResults[m.id] || {};
+                        return `<div class="bg-black/60 border border-zinc-800 p-3 rounded-xl text-xs space-y-1">
+                            <div class="flex justify-between font-bold ${res.winner === 'home' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.home}</span><span>${res.homeScore ?? '-'}</span></div>
+                            <div class="flex justify-between font-bold ${res.winner === 'away' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.away}</span><span>${res.awayScore ?? '-'}</span></div>
+                        </div>`;
+                    }).join('')}
+                </div>
+                <!-- SF (2 Matches) -->
+                <div class="space-y-12 w-64">
+                    <div class="text-[10px] font-black uppercase text-zinc-500 tracking-widest text-center">Semi-Finals</div>
+                    ${allFixtures.SF.map(m => {
+                        const res = matchResults[m.id] || {};
+                        return `<div class="bg-black/60 border border-zinc-800 p-3.5 rounded-xl text-xs space-y-1.5">
+                            <div class="flex justify-between font-bold ${res.winner === 'home' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.home}</span><span>${res.homeScore ?? '-'}</span></div>
+                            <div class="flex justify-between font-bold ${res.winner === 'away' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.away}</span><span>${res.awayScore ?? '-'}</span></div>
+                        </div>`;
+                    }).join('')}
+                </div>
+                <!-- FINAL & THIRD -->
+                <div class="w-64 text-center space-y-6">
+                    <div>
+                        <div class="text-[10px] font-black uppercase text-[var(--world-gold)] tracking-widest mb-2">World Cup Final</div>
+                        ${allFixtures.FINAL.map(m => {
+                            const res = matchResults[m.id] || {};
+                            return `<div class="glass-panel border-2 border-[var(--world-gold)]/50 p-4 rounded-2xl text-xs space-y-2 bg-[var(--world-gold)]/5">
+                                <div class="flex justify-between font-black ${res.winner === 'home' ? 'text-[var(--world-gold)]' : 'text-white'}"><span class="truncate pr-2">${m.home}</span><span>${res.homeScore ?? '-'}</span></div>
+                                <div class="flex justify-between font-black ${res.winner === 'away' ? 'text-[var(--world-gold)]' : 'text-white'}"><span class="truncate pr-2">${m.away}</span><span>${res.awayScore ?? '-'}</span></div>
+                            </div>`;
+                        }).join('')}
                     </div>
-                    
-                    <!-- Compression status indicator -->
-                    <div id="upload-status" class="hidden text-zinc-400 text-[10px] animate-pulse mb-4">ပုံကို ချုံ့ပြီး တင်ဆက်နေပါသည်...</div>
-
-                    <input type="text" placeholder="Manager Name" value="${rd.name}" onchange="updatePOTR('name', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent text-3xl font-black text-white text-center w-full outline-none mb-8 placeholder:text-zinc-800">
-                    <div class="flex justify-center gap-4">
-                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]">
-                            <span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Goals</span>
-                            <input type="number" value="${rd.gf}" onchange="updatePOTR('gf', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-emerald-500 outline-none">
-                        </div>
-                        <div class="bg-black/40 px-6 py-5 rounded-[1.5rem] border border-white/5 min-w-[80px]">
-                            <span class="text-[8px] font-black text-zinc-500 uppercase block mb-1">Conceded</span>
-                            <input type="number" value="${rd.ga}" onchange="updatePOTR('ga', this.value)" ${!window.state.isAdmin?'readonly':''} class="bg-transparent w-full text-center font-black text-2xl text-red-500 outline-none">
-                        </div>
+                    <div>
+                        <div class="text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-2">Third-Place Match</div>
+                        ${allFixtures.THIRD.map(m => {
+                            const res = matchResults[m.id] || {};
+                            return `<div class="bg-black/60 border border-zinc-800 p-3 rounded-2xl text-xs space-y-1">
+                                <div class="flex justify-between font-bold ${res.winner === 'home' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.home}</span><span>${res.homeScore ?? '-'}</span></div>
+                                <div class="flex justify-between font-bold ${res.winner === 'away' ? 'text-emerald-400' : 'text-zinc-300'}"><span class="truncate pr-2">${m.away}</span><span>${res.awayScore ?? '-'}</span></div>
+                            </div>`;
+                        }).join('')}
                     </div>
                 </div>
-            `;
-        };
+            </div>
+        </div>`;
+    }
 
-        const renderKnockout = (container) => {
-            const stages = [{ id: 'playoffs', label: 'Play-offs' }, { id: 'r16', label: 'Round of 16' }, { id: 'qf', label: 'Quarter Final' }, { id: 'sf', label: 'Semi Final' }, { id: 'final', label: 'Final' }];
-            container.innerHTML = `<div class="space-y-10 pb-10">${stages.map(s => `
-                <div class="space-y-4">
-                    <h3 class="text-[10px] font-black uppercase text-blue-500 tracking-[0.3em] pl-4 border-l-2 border-blue-600">${s.label}</h3>
-                    <div class="grid gap-3">${renderKOList(s.id)}</div>
-                    ${window.state.isAdmin ? `<button onclick="addKOMatch('${s.id}')" class="w-full py-3 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl text-[8px] font-black text-zinc-500 hover:text-zinc-300 transition-all">+ Add ${s.label} Match</button>` : ''}
-                </div>`).join('')}</div>`;
-        };
-
-        const renderKOList = (stageId) => {
-            const matches = window.state.knockout[stageId] || [];
-            if (matches.length === 0) return `<p class="text-[9px] opacity-20 px-4 italic">To Be Announced</p>`;
-            return matches.map((m, idx) => {
-                let s1Color = 'text-white', s2Color = 'text-white';
-                if (m.s1 !== null && m.s2 !== null) {
-                    if (m.s1 > m.s2) { s1Color = 'text-emerald-500'; s2Color = 'text-red-500'; }
-                    else if (m.s2 > m.s1) { s2Color = 'text-emerald-500'; s1Color = 'text-red-500'; }
-                    else { s1Color = 'text-yellow-500'; s2Color = 'text-yellow-500'; }
-                }
-                return `
-                <div class="bg-zinc-900/60 p-4 rounded-3xl border border-white/5 flex items-center justify-between gap-4">
-                    <div class="flex-1 space-y-2">
-                        <input type="text" value="${m.t1 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 text-zinc-100" placeholder="Team 1">
-                        <input type="text" value="${m.t2 || ''}" onchange="updateKOMatch('${stageId}', ${idx}, 't2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-full bg-transparent text-sm font-bold outline-none placeholder:text-zinc-800 text-zinc-100" placeholder="Team 2">
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <input type="number" value="${m.s1 ?? ''}" onchange="updateKOMatch('${stageId}', ${idx}, 's1', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-10 h-8 bg-black rounded-lg text-center text-sm font-black border border-white/5 outline-none ${s1Color}">
-                        <input type="number" value="${m.s2 ?? ''}" onchange="updateKOMatch('${stageId}', ${idx}, 's2', this.value)" ${!window.state.isAdmin?'readonly':''} class="w-10 h-8 bg-black rounded-lg text-center text-sm font-black border border-white/5 outline-none ${s2Color}">
-                    </div>
-                    ${window.state.isAdmin ? `<button onclick="deleteKOMatch('${stageId}', ${idx})" class="text-red-500/20 hover:text-red-500 px-2 text-lg transition-colors">×</button>` : ''}
-                </div>`;
-            }).join('');
-        };
-
-        const renderModal = () => {
-            const modalContainer = document.getElementById('modal-container');
-            if (!modalContainer) return;
-            const m = window.state.modal;
-            if (!m.isOpen) {
-                modalContainer.innerHTML = '';
-                return;
-            }
-
-            modalContainer.innerHTML = `
-                <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
-                    <div class="bg-zinc-950 border border-white/10 rounded-[2rem] p-6 w-full max-w-sm text-center shadow-2xl transition-all">
-                        <h4 class="text-sm font-black uppercase text-blue-500 tracking-wider mb-2">${m.title}</h4>
-                        <p class="text-xs text-zinc-300 font-bold mb-6 leading-relaxed">${m.message}</p>
-                        <div class="flex gap-3 justify-center">
-                            ${m.showCancel ? `
-                                <button onclick="window.closeModal()" class="flex-1 py-3 bg-zinc-900 hover:bg-zinc-800 active:scale-95 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 border border-white/5">မလုပ်တော့ပါ</button>
-                            ` : ''}
-                            <button id="modal-confirm-btn" class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-blue-600/20">အတည်ပြုသည်</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('modal-confirm-btn').onclick = m.onConfirm;
-        };
-
-        window.updateTeamName = (id, name) => { 
-            window.state.teams[id].name = name; 
-            // အကယ်၍ Admin က နာမည်အသစ်ပြင်ရိုက်လျှင် Fixed Team List ထဲမှာ ရှာပြီး Logo ကိုပါ ပြိုင်တူပြောင်းပေးရန်
-            const matchedTeam = fixedTeams.find(ft => ft.name.toLowerCase() === name.trim().toLowerCase());
-            if (matchedTeam) {
-                window.state.teams[id].logo = matchedTeam.logo;
-                window.state.teams[id].telegram = matchedTeam.telegram;
-            } else {
-                window.state.teams[id].logo = ""; // Fallback will auto render letter initials
-                window.state.teams[id].telegram = "";
-            }
-            saveToCloud(); 
-            refreshUI(); 
-        };
-
-        window.updateTeamTelegram = (id, username) => {
-            window.state.teams[id].telegram = username.trim();
-            saveToCloud();
-            refreshUI();
-        };
-
-        // Circle Method (Round Robin) ကို သုံးပြီး Match များကို စနစ်တကျ ထုတ်လုပ်ခြင်း
-        window.generateFixtures = () => {
-            const activeTeams = window.state.teams.filter(t => t.name.trim() !== "");
-            if (activeTeams.length < 2) {
-                window.showModal("သတိပေးချက်", "Manager အနည်းဆုံး ၂ ဦး လိုအပ်ပါသည်", () => window.closeModal(), false);
-                return;
-            }
-
-            window.showModal(
-                "ပွဲစဉ်ဇယား ထုတ်ရန် အတည်ပြုချက်",
-                `လက်ရှိ စာရင်းသွင်းထားသူ Manager ${activeTeams.length} ဦးအတွက် အချင်းချင်း ပွဲစဉ်လုံးဝမထပ်စေဘဲ Round 8 အထိ Fixtures များ စနစ်တကျ ဖန်တီးမလား?`,
-                () => {
-                    // ရှိပြီးသား rounds များကို 8 rounds အထိ ဖြစ်စေရန် ပြင်ဆင်ခြင်း
-                    window.state.rounds = Array.from({length: 8}, (_, i) => ({ round: i + 1, matches: [] }));
-
-                    let scheduleTeams = [...activeTeams].sort(() => Math.random() - 0.5);
-                    let N = scheduleTeams.length;
-                    
-                    let hasBye = N % 2 !== 0;
-                    if (hasBye) {
-                        scheduleTeams.push({ id: -1, name: "BYE" });
-                        N++;
-                    }
-
-                    const maxPossibleRounds = N - 1;
-                    const roundsToCreate = Math.min(8, maxPossibleRounds);
-
-                    for (let r = 0; r < roundsToCreate; r++) {
-                        const roundMatches = [];
-                        
-                        for (let i = 0; i < N / 2; i++) {
-                            const home = scheduleTeams[i];
-                            const away = scheduleTeams[N - 1 - i];
-
-                            if (home.id !== -1 && away.id !== -1) {
-                                roundMatches.push({
-                                    h: home.id,
-                                    a: away.id,
-                                    hs: null,
-                                    as: null
-                                });
-                            }
-                        }
-
-                        window.state.rounds[r].matches = roundMatches.sort(() => Math.random() - 0.5);
-
-                        // Rotation logic (အညွှန်း 0 ကို ပုံသေထား၍ လှည့်ခြင်း)
-                        scheduleTeams = [
-                            scheduleTeams[0],
-                            scheduleTeams[N - 1],
-                            ...scheduleTeams.slice(1, N - 1)
-                        ];
-                    }
-
-                    window.state.isLeagueStarted = true;
-                    window.state.currentRound = 1;
-                    saveToCloud();
-                    window.closeModal();
-                    refreshUI();
-                },
-                true
-            );
-        };
-
-        window.updateScore = (rIdx, mIdx, side, val) => { window.state.rounds[rIdx].matches[mIdx][side] = val === "" ? null : parseInt(val); saveToCloud(); refreshUI(); };
-        window.updatePOTR = (field, val) => { const cur = window.state.currentRound; if(!window.state.potr[cur]) window.state.potr[cur] = { name: '', gf: 0, ga: 0, img: '' }; window.state.potr[cur][field] = field === 'name' ? val : (val === "" ? 0 : parseInt(val)); saveToCloud(); refreshUI(); };
-        
-        // HTML Canvas ကိုအသုံးပြုပြီး ပုံကို Max 400x400 JPG, Quality 70% ဖြင့် Compression လုပ်ခြင်း
-        const compressImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.src = base64Str;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > maxWidth) {
-                            height *= maxWidth / width;
-                            width = maxWidth;
-                        }
-                    } else {
-                        if (height > maxHeight) {
-                            width *= maxHeight / height;
-                            height = maxHeight;
-                        }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Firestore Document Capacity Limits ကို ကာကွယ်ရန် lightweight jpeg ပုံစံဖြင့် Export ထုတ်မည်
-                    resolve(canvas.toDataURL('image/jpeg', 0.7)); 
-                };
-            });
-        };
-
-        window.handleImageUpload = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const statusIndicator = document.getElementById('upload-status');
-            if (statusIndicator) statusIndicator.classList.remove('hidden');
-
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    // မူရင်း Base64 အား dynamic canvas အသုံးပြု၍ ချုံ့ပစ်ခြင်း
-                    const compressedDataUrl = await compressImage(event.target.result);
-                    
-                    const cur = window.state.currentRound;
-                    if(!window.state.potr[cur]) window.state.potr[cur] = { name: '', gf: 0, ga: 0, img: '' };
-                    window.state.potr[cur].img = compressedDataUrl;
-                    
-                    await saveToCloud();
-                    if (statusIndicator) statusIndicator.classList.add('hidden');
-                    refreshUI();
-                } catch (error) {
-                    console.error("Image compression error: ", error);
-                    if (statusIndicator) statusIndicator.classList.add('hidden');
-                    window.showModal("Error", "ပုံတင်ရာတွင် ချွတ်ယွင်းမှုရှိနေပါသည်", () => window.closeModal(), false);
-                }
-            };
-            reader.readAsDataURL(file);
-        };
-
-        window.startLeague = () => { window.state.isLeagueStarted = true; saveToCloud(); refreshUI(); };
-        
-        window.resetTournament = () => {
-            window.showModal(
-                "Data အားလုံး ဖျက်ပစ်ရန် အတည်ပြုချက်",
-                "ပြိုင်ပွဲဝင် စာရင်းများ၊ ရမှတ်ဇယားများနှင့် ပွဲစဉ်ဇယားများ အားလုံးကို ဖျက်ပြီး မူလအတိုင်း (Fixed Teams/Logos/Telegrams များဖြင့်) ပြန်လည်စတင်ရန် သေချာပါသလား?",
-                () => {
-                    window.state.isLeagueStarted = false;
-                    window.state.rounds = Array.from({length: 4}, (_, i) => ({ round: i + 1, matches: [] }));
-                    window.state.knockout = { playoffs: [], r16: [], qf: [], sf: [], final: [] };
-                    window.state.potr = {};
-                    window.state.teams = [...initialTeams];
-                    saveToCloud();
-                    window.closeModal();
-                    refreshUI();
-                },
-                true
-            );
-        };
-
-        window.addKOMatch = (stage) => { window.state.knockout[stage].push({ t1: '', t2: '', s1: null, s2: null }); saveToCloud(); refreshUI(); };
-        
-        window.deleteKOMatch = (stage, idx) => {
-            window.showModal(
-                "ပွဲစဉ်ဖျက်ရန် အတည်ပြုချက်",
-                "ရွေးချယ်ထားသော Knockout ပွဲစဉ်ကို ဖျက်ပစ်ရန် သေချာပါသလား?",
-                () => {
-                    window.state.knockout[stage].splice(idx, 1);
-                    saveToCloud();
-                    window.closeModal();
-                    refreshUI();
-                },
-                true
-            );
-        };
-
-        window.updateKOMatch = (stage, idx, field, val) => { window.state.knockout[stage][idx][field] = field.startsWith('s') ? (val === "" ? null : parseInt(val)) : val; saveToCloud(); refreshUI(); };
-        window.changeTab = t => { window.state.activeTab = t; refreshUI(); };
-        window.moveRound = d => { const n = window.state.currentRound + d; if(n > 0 && n <= 8) { window.state.currentRound = n; refreshUI(); } };
-        
-        window.adminLogin = () => {
-            const pass = prompt("Password?");
-            if(pass === "1234") {
-                window.state.isAdmin = true;
-                refreshUI();
-            } else if (pass !== null) {
-                window.showModal("သတိပေးချက်", "မှားယွင်းသော စကားဝှက် ဖြစ်သည်", () => window.closeModal(), false);
-            }
-        };
-
-        window.logoutAdmin = () => { window.state.isAdmin = false; refreshUI(); };
-        window.renderHeader = () => { document.getElementById('admin-status').innerHTML = window.state.isAdmin ? `<button onclick="logoutAdmin()" class="px-3 py-1 bg-blue-600/10 text-blue-500 text-[8px] font-black rounded-full border border-blue-500/20 uppercase">Admin Mode</button>` : `<button onclick="adminLogin()" class="px-3 py-1 bg-white/5 text-zinc-500 text-[8px] font-black rounded-full uppercase">Login</button>`; };
-
-        // Telegram Floating Bubble ဆွဲရွှေ့နိုင်ရန် Logic
-        let isDragging = false;
-        const initDraggable = () => {
-            const dragEl = document.getElementById('draggable-result');
-            let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
-            let dragStartTime;
-
-            const dragStart = (e) => {
-                dragStartTime = Date.now();
-                if (e.type === "touchstart") {
-                    initialX = e.touches[0].clientX - xOffset;
-                    initialY = e.touches[0].clientY - yOffset;
-                } else {
-                    initialX = e.clientX - xOffset;
-                    initialY = e.clientY - yOffset;
-                }
-                if (e.target === dragEl || dragEl.contains(e.target)) isDragging = true;
-            };
-
-            const dragEnd = () => {
-                initialX = currentX;
-                initialY = currentY;
-                const dragDuration = Date.now() - dragStartTime;
-                
-                // တချက်နှိပ်ရုံသာ ဖြစ်ပါက သက်ဆိုင်ရာ Telegram Link သို့သွားရန်
-                if (isDragging && dragDuration < 200) {
-                   window.open('https://t.me/agust_nadi', '_blank');
-                }
-                
-                isDragging = false;
-            };
-
-            const drag = (e) => {
-                if (isDragging) {
-                    e.preventDefault();
-                    if (e.type === "touchmove") {
-                        currentX = e.touches[0].clientX - initialX;
-                        currentY = e.touches[0].clientY - initialY;
-                    } else {
-                        currentX = e.clientX - initialX;
-                        currentY = e.clientY - initialY;
-                    }
-                    xOffset = currentX; yOffset = currentY;
-                    setTranslate(currentX, currentY, dragEl);
-                }
-            };
-
-            const setTranslate = (xPos, yPos, el) => { el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`; };
-
-            dragEl.addEventListener("mousedown", dragStart, false);
-            window.addEventListener("mouseup", dragEnd, false);
-            window.addEventListener("mousemove", drag, false);
-            
-            dragEl.addEventListener("touchstart", dragStart, {passive: false});
-            window.addEventListener("touchend", dragEnd, false);
-            window.addEventListener("touchmove", drag, {passive: false});
-        };
-
-        window.onload = () => { refreshUI(); initDraggable(); };
-    </script>
-    <style>
-        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; touch-action: pan-y; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 10px; }
-        
-        .floating-nav-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 100; }
-        .floating-nav { background: rgba(15, 15, 25, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 2.5rem; height: 76px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: space-around; padding: 0 12px; }
-
-        .result-bubble {
-            position: fixed;
-            right: 20px;
-            top: 50%;
-            width: 60px;
-            height: 60px;
-            background: #0088cc;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.05);
-            cursor: grab;
-            z-index: 150;
-            user-select: none;
-            touch-action: none;
-            transition: transform 0.1s ease-out, scale 0.2s;
+    function renderPublicTournamentStatus(container) {
+        let completedCount = 0;
+        let totalMatches = 64;
+        for (let i = 1; i <= 64; i++) {
+            if (matchResults[i] && matchResults[i].status === "finished") completedCount++;
         }
-        .result-bubble:active { cursor: grabbing; scale: 0.95; }
 
-        @keyframes pulse { 0%, 100% { box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4); } 50% { box-shadow: 0 10px 35px rgba(0, 136, 204, 0.7); } }
-        .result-bubble { animation: pulse 2s infinite; }
+        const finalRes = matchResults[64];
+        const champion = finalRes && finalRes.status === "finished" ? finalRes.winnerName : "Not Decided";
 
-        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
-    </style>
-</head>
-<body class="max-w-md mx-auto min-h-screen border-x border-white/5 relative bg-[radial-gradient(circle_at_50%_-10%,rgba(59,130,246,0.15),transparent_60%)] pb-32">
-    
-    <!-- Modernized Tech-Sports Premium Header Section -->
-    <header class="px-6 pt-8 pb-4 mb-6 relative overflow-hidden">
-        <!-- Background Radial Glow behind the title -->
-        <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-24 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>
-        
-        <!-- Top Bar inside Header: Badges & Login -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-2 bg-white/[0.03] backdrop-blur-md px-3 py-1.5 rounded-full border border-white/5 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]"></span>
-                <span class="text-[9px] font-bold text-zinc-400 uppercase tracking-[0.2em]">The One Community</span>
+        container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div class="glass-panel p-5 sm:p-6 rounded-3xl space-y-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Current Stage</span>
+                <h3 class="heading-font text-xl sm:text-2xl font-black text-[var(--world-gold)]">${completedCount === 64 ? 'CHAMPION CROWNED' : completedCount >= 60 ? 'FINAL STAGE' : completedCount >= 48 ? 'ROUND OF 16' : 'GROUP STAGE'}</h3>
             </div>
-            <div id="admin-status"></div>
-        </div>
-
-        <!-- Title & Branding -->
-        <div class="space-y-1">
-            <div class="text-[9px] font-black uppercase tracking-[0.4em] text-blue-500/80 mb-1"></div>
-            <h1 class="text-4xl font-extrabold tracking-tight leading-none">
-                <span class="bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent font-black tracking-tight uppercase">Pro League</span>
-            </h1>
-            <div class="flex items-center gap-3 pt-1">
-                <span class="text-2xl font-black tracking-widest bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 bg-clip-text text-transparent">SEASON 7</span>
-                <div class="h-[1.5px] flex-1 bg-gradient-to-r from-blue-500/30 via-blue-500/5 to-transparent rounded-full"></div>
+            <div class="glass-panel p-5 sm:p-6 rounded-3xl space-y-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Matches Completed</span>
+                <h3 class="heading-font text-xl sm:text-2xl font-black text-white">${completedCount} / ${totalMatches}</h3>
             </div>
-        </div>
-    </header>
+            <div class="glass-panel p-5 sm:p-6 rounded-3xl space-y-2">
+                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-500">World Cup Champion</span>
+                <h3 class="heading-font text-xl sm:text-2xl font-black text-emerald-400 truncate">${champion}</h3>
+            </div>
+        </div>`;
+    }
 
-    <main id="content" class="px-4"></main>
+    window.renderAdminMatches = function() {
+        const stageFilter = document.getElementById('admin-stage-select').value;
+        const groupFilter = document.getElementById('admin-group-select').value;
+        const statusFilter = document.getElementById('admin-status-select').value;
+        const search = document.getElementById('admin-search').value.toLowerCase().trim();
 
-    <!-- Draggable Floating Result Bubble with Telegram Link -->
-    <div id="draggable-result" class="result-bubble">
-        <svg viewBox="0 0 24 24" class="w-6 h-6 text-white mb-0.5" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .33z"/>
-        </svg>
-        <span class="text-[7px] font-black text-white uppercase tracking-tighter">Result</span>
-    </div>
+        let fixturesList = [];
+        if (stageFilter === "ALL" || stageFilter.startsWith("GROUP")) {
+            const roundNum = stageFilter === "GROUP_R1" ? 1 : stageFilter === "GROUP_R2" ? 2 : stageFilter === "GROUP_R3" ? 3 : null;
+            GROUP_FIXTURES.forEach(m => {
+                if (roundNum && m.round !== roundNum) return;
+                if (groupFilter !== "ALL" && m.group !== groupFilter) return;
+                fixturesList.push(m);
+            });
+        }
 
-    <div class="floating-nav-container">
-        <nav id="nav-bar" class="floating-nav"></nav>
-    </div>
+        const allKnockout = getAllTournamentFixtures(matchResults);
+        ['R16', 'QF', 'SF', 'THIRD', 'FINAL'].forEach(sKey => {
+            if (stageFilter === "ALL" || stageFilter === sKey) {
+                allKnockout[sKey].forEach(m => fixturesList.push(m));
+            }
+        });
 
-    <!-- Custom Modal Container -->
-    <div id="modal-container"></div>
+        if (statusFilter !== "ALL") {
+            fixturesList = fixturesList.filter(m => {
+                const res = matchResults[m.id];
+                const st = res && res.status === "finished" ? "finished" : "pending";
+                return st === statusFilter;
+            });
+        }
 
-    <div id="loader" class="fixed inset-0 bg-black z-[200] flex items-center justify-center">
-        <div class="w-12 h-12 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-    </div>
+        if (search) {
+            fixturesList = fixturesList.filter(m => `${m.home} ${m.away} ${m.id} ${m.stage || 'GROUP'}`.toLowerCase().includes(search));
+        }
 
+        const container = document.getElementById('admin-matches-container');
+        if (!container) return;
+
+        if (fixturesList.length === 0) {
+            container.innerHTML = `<div class="col-span-full py-12 text-center text-zinc-500 text-xs font-bold uppercase tracking-widest glass-panel rounded-3xl">No matching fixtures found</div>`;
+            return;
+        }
+
+        container.innerHTML = fixturesList.map(m => {
+            const res = matchResults[m.id] || { homeScore: "", awayScore: "", homePenalties: "", awayPenalties: "", status: "pending" };
+            const isFinished = res.status === "finished";
+            const isKnockout = m.stage && m.stage !== "GROUP";
+
+            return `
+            <div class="glass-panel rounded-3xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+                <div class="flex items-center justify-between text-[11px] font-black tracking-widest text-zinc-400">
+                    <span class="text-[var(--world-gold)] truncate pr-2">${m.stage === 'GROUP' ? `GRP ${m.group} • R${m.round}` : `${m.stage} • #${m.matchNumber || m.id}`}</span>
+                    <span class="bg-black border border-zinc-800 px-2 py-0.5 rounded-full text-[10px] font-mono shrink-0">ID: ${m.id}</span>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 text-center py-1">
+                    <div class="flex-1 font-black text-xs sm:text-sm text-white truncate" title="${m.home}">${m.home}</div>
+                    <span class="text-zinc-600 font-black text-xs shrink-0">VS</span>
+                    <div class="flex-1 font-black text-xs sm:text-sm text-white truncate" title="${m.away}">${m.away}</div>
+                </div>
+
+                <div class="flex flex-col space-y-2 bg-black/60 p-3 rounded-2xl border border-zinc-800">
+                    <div class="flex items-center justify-center space-x-3 sm:space-x-4">
+                        <div class="flex flex-col items-center">
+                            <span class="text-[9px] font-black uppercase text-zinc-500 mb-1">HOME</span>
+                            <input type="number" min="0" id="score-h-${m.id}" value="${res.homeScore ?? ''}" class="score-input" placeholder="-">
+                        </div>
+                        <span class="text-zinc-600 font-bold text-lg mt-4">:</span>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[9px] font-black uppercase text-zinc-500 mb-1">AWAY</span>
+                            <input type="number" min="0" id="score-a-${m.id}" value="${res.awayScore ?? ''}" class="score-input" placeholder="-">
+                        </div>
+                    </div>
+                    ${isKnockout ? `
+                    <div class="flex items-center justify-center space-x-3 pt-2 border-t border-white/5 text-[10px]">
+                        <div class="flex items-center gap-1">
+                            <span>Pen H:</span>
+                            <input type="number" min="0" id="pen-h-${m.id}" value="${res.homePenalties ?? ''}" class="w-11 h-8 bg-black border border-zinc-700 text-center rounded text-xs font-bold text-[var(--world-gold)]">
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span>Pen A:</span>
+                            <input type="number" min="0" id="pen-a-${m.id}" value="${res.awayPenalties ?? ''}" class="w-11 h-8 bg-black border border-zinc-700 text-center rounded text-xs font-bold text-[var(--world-gold)]">
+                        </div>
+                    </div>` : ''}
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                    <span class="px-2.5 py-1 rounded-lg font-bold uppercase text-[9px] ${isFinished ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+                        ${res.status.toUpperCase()}
+                    </span>
+                    <div class="flex space-x-2">
+                        ${isFinished ? `<button onclick="clearMatchResult(${m.id})" class="px-3 py-2 rounded-xl text-xs font-bold bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/50 transition">Reset</button>` : ''}
+                        <button onclick="saveMatchResult(${m.id}, ${isKnockout})" class="px-4 py-2 rounded-xl text-xs font-black uppercase bg-[var(--world-gold)] text-black hover:bg-[var(--world-gold-hover)] shadow-md transition">Save</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    };
+
+    window.handleLogin = function() {
+        const pass = document.getElementById('admin-passcode').value.trim();
+        if (pass === "2024") {
+            isAdminUnlocked = true;
+            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('admin-panel-content').classList.remove('hidden');
+            renderAdminMatches();
+            showToast("Admin portal unlocked successfully!");
+        } else {
+            showToast("Password မှားယွင်းနေပါသည်။", true);
+        }
+    };
+
+    window.saveMatchResult = async function(matchId, isKnockout) {
+        const numericMatchId = Number(matchId);
+
+        const allFixtures = getAllTournamentFixtures(matchResults);
+        const fixture = Object.values(allFixtures)
+            .flat()
+            .find(f => Number(f.id) === numericMatchId) || GROUP_FIXTURES.find(f => Number(f.id) === numericMatchId);
+
+        if (!fixture) {
+            showToast(`Match #${numericMatchId} fixture not found.`, true);
+            return;
+        }
+
+        const homeTeam = fixture.home;
+        const awayTeam = fixture.away;
+
+        const hEl = document.getElementById(`score-h-${numericMatchId}`);
+        const aEl = document.getElementById(`score-a-${numericMatchId}`);
+
+        if (!hEl || !aEl) {
+            showToast(`Match #${numericMatchId} score inputs not found.`, true);
+            return;
+        }
+
+        const hInput = hEl.value.trim();
+        const aInput = aEl.value.trim();
+
+        if (hInput === "" || aInput === "") {
+            showToast("Please enter both home & away scores.", true);
+            return;
+        }
+
+        const hScore = Number(hInput);
+        const aScore = Number(aInput);
+
+        if (homeTeam === awayTeam) {
+            showToast("A team cannot play against itself!", true);
+            return;
+        }
+
+        let winner = null;
+        let loser = null;
+        let winnerName = null;
+        let loserName = null;
+        let hPen = null;
+        let aPen = null;
+
+        if (hScore > aScore) {
+            winner = 'home'; loser = 'away';
+            winnerName = homeTeam; loserName = awayTeam;
+        } else if (aScore > hScore) {
+            winner = 'away'; loser = 'home';
+            winnerName = awayTeam; loserName = homeTeam;
+        } else {
+            if (isKnockout) {
+                const penHInput = document.getElementById(`pen-h-${numericMatchId}`)?.value;
+                const penAInput = document.getElementById(`pen-a-${numericMatchId}`)?.value;
+                if (penHInput === "" || penAInput === "" || penHInput === penAInput) {
+                    showToast("Scores are tied! Penalty shootout winners required.", true);
+                    return;
+                }
+                hPen = Number(penHInput);
+                aPen = Number(penAInput);
+                if (hPen > aPen) {
+                    winner = 'home'; loser = 'away';
+                    winnerName = homeTeam; loserName = awayTeam;
+                } else {
+                    winner = 'away'; loser = 'home';
+                    winnerName = awayTeam; loserName = homeTeam;
+                }
+            } else {
+                winner = 'draw';
+            }
+        }
+
+        const payload = {
+            matchId: numericMatchId,
+            homeScore: hScore,
+            awayScore: aScore,
+            homePenalties: hPen,
+            awayPenalties: aPen,
+            winner,
+            loser,
+            winnerName,
+            loserName,
+            status: "finished",
+            updatedAt: new Date().toISOString()
+        };
+
+        matchResults[numericMatchId] = payload;
+        saveLocalResults();
+
+        if (window.CloudDataService) {
+            const cloudResult = await window.CloudDataService.saveResultToCloud(numericMatchId, payload);
+            if (cloudResult && !cloudResult.cloudSaved) {
+                showToast(`Match #${numericMatchId} saved locally, but cloud save failed.`, true);
+            } else {
+                showToast(`Match #${numericMatchId} result saved successfully!`);
+            }
+        } else {
+            showToast(`Match #${numericMatchId} result saved successfully!`);
+        }
+        renderAdminMatches();
+        renderPublicView();
+    };
+
+    window.clearMatchResult = async function(matchId) {
+        delete matchResults[matchId];
+        saveLocalResults();
+        if (window.CloudDataService) {
+            await window.CloudDataService.deleteResultFromCloud(matchId);
+        }
+        showToast(`Match #${matchId} reset.`);
+        renderAdminMatches();
+        renderPublicView();
+    };
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-msg');
+        const toastIcon = document.getElementById('toast-icon');
+        if (!toast) return;
+
+        toastMsg.innerText = msg;
+        toastIcon.className = isError ? "fas fa-exclamation-triangle text-rose-500 text-lg shrink-0" : "fas fa-check-circle text-[var(--world-gold)] text-lg shrink-0";
+        toast.style.borderColor = isError ? "#f43f5e" : "#ddec0f";
+
+        toast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+            toast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+        }, 3000);
+    }
+
+    window.onload = () => {
+        loadLocalResults();
+
+        const pubGroupSelect = document.getElementById('pub-group-select');
+        const adminGroupSelect = document.getElementById('admin-group-select');
+        if (pubGroupSelect && adminGroupSelect) {
+            GROUPS.forEach(g => {
+                const opt1 = document.createElement('option');
+                opt1.value = g; opt1.innerText = `Group ${g}`;
+                pubGroupSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = g; opt2.innerText = `Group ${g}`;
+                adminGroupSelect.appendChild(opt2);
+            });
+        }
+
+        if (window.CloudDataService) {
+            window.CloudDataService.subscribeToCloud(liveResults => {
+                matchResults = { ...matchResults, ...liveResults };
+                saveLocalResults();
+                if (activeTab === 'public') renderPublicView();
+                else if (isAdminUnlocked) renderAdminMatches();
+            });
+        }
+
+        renderPublicView();
+    };
+</script>
 </body>
 </html>
